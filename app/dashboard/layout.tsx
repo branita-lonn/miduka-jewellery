@@ -9,27 +9,18 @@ import { LayoutDashboard, Package, Tags, ShoppingCart, Users, BarChart, Settings
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth();
+const navLinks = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/products", label: "Products", icon: Package },
+  { href: "/dashboard/categories", label: "Categories", icon: Tags },
+  { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/dashboard/customers", label: "Customers", icon: Users },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart },
+  { href: "/dashboard/settings", label: "Store Settings", icon: Settings },
+];
 
-  if (!session || session.user.role !== "STORE_OWNER") {
-    redirect("/auth/login");
-  }
-
-  const storeSettings = await prisma.storeSettings.findFirst();
-  const storeName = storeSettings?.storeName || "MiDuka";
-
-  const navLinks = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/products", label: "Products", icon: Package },
-    { href: "/dashboard/categories", label: "Categories", icon: Tags },
-    { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
-    { href: "/dashboard/customers", label: "Customers", icon: Users },
-    { href: "/dashboard/analytics", label: "Analytics", icon: BarChart },
-    { href: "/dashboard/settings", label: "Store Settings", icon: Settings },
-  ];
-
-  const SidebarContent = () => (
+function SidebarContent({ storeName }: { storeName: string }) {
+  return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-6 border-b border-border">
         <span className="text-xl font-bold text-primary">{storeName}</span>
@@ -59,12 +50,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
     </div>
   );
+}
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+
+  if (!session || session.user.role !== "STORE_OWNER") {
+    redirect("/auth/login");
+  }
+
+  const storeSettings = await prisma.storeSettings.findFirst();
+  const storeName = storeSettings?.storeName || "MiDuka";
 
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop Sidebar */}
       <aside className="hidden w-64 border-r border-border bg-card md:block">
-        <SidebarContent />
+        <SidebarContent storeName={storeName} />
       </aside>
 
       {/* Mobile Header & Sidebar */}
@@ -77,7 +79,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <span className="sr-only">Toggle navigation menu</span>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
-              <SidebarContent />
+              <SidebarContent storeName={storeName} />
             </SheetContent>
           </Sheet>
         </header>

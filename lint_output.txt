@@ -1,0 +1,167 @@
+
+> single-seller@0.1.0 lint
+> eslint
+
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/api/dashboard/categories/[id]/route.ts
+  15:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  82:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/api/dashboard/categories/route.ts
+  9:27  warning  'req' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/api/dashboard/products/[id]/images/reorder/route.ts
+  14:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/api/dashboard/products/[id]/route.ts
+   15:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   49:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  124:53  error    Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  187:11  warning  'session' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/api/dashboard/products/route.ts
+   10:27  warning  'req' is defined but never used           @typescript-eslint/no-unused-vars
+   31:57  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:34  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/auth/login/page.tsx
+  104:16  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/layout.tsx
+  10:10  warning  'Button' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  67:10  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/layout.tsx:67:10
+  65 |       {/* Desktop Sidebar */}
+  66 |       <aside className="hidden w-64 border-r border-border bg-card md:block">
+> 67 |         <SidebarContent />
+     |          ^^^^^^^^^^^^^^ This component is created during render
+  68 |       </aside>
+  69 |
+  70 |       {/* Mobile Header & Sidebar */}
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/layout.tsx:32:26
+  30 |   ];
+  31 |
+> 32 |   const SidebarContent = () => (
+     |                          ^^^^^^^
+> 33 |     <div className="flex h-full flex-col">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 34 |       <div className="flex h-16 items-center px-6 border-b border-border">
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 61 |   );
+     | ^^^^ The component is created during render here
+  62 |
+  63 |   return (
+  64 |     <div className="flex min-h-screen bg-background">      react-hooks/static-components
+  80:16  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/layout.tsx:80:16
+  78 |             </SheetTrigger>
+  79 |             <SheetContent side="left" className="w-64 p-0">
+> 80 |               <SidebarContent />
+     |                ^^^^^^^^^^^^^^ This component is created during render
+  81 |             </SheetContent>
+  82 |           </Sheet>
+  83 |         </header>
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/layout.tsx:32:26
+  30 |   ];
+  31 |
+> 32 |   const SidebarContent = () => (
+     |                          ^^^^^^^
+> 33 |     <div className="flex h-full flex-col">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 34 |       <div className="flex h-16 items-center px-6 border-b border-border">
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 60 |     </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 61 |   );
+     | ^^^^ The component is created during render here
+  62 |
+  63 |   return (
+  64 |     <div className="flex min-h-screen bg-background">  react-hooks/static-components
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/products/[id]/edit/page.tsx
+  59:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  59:81  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/products/new/page.tsx
+  43:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/products/page.tsx
+  36:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/not-found.tsx
+  13:50  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/auth.ts
+  54:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/category-form.tsx
+   55:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   78:16  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/category-form.tsx:78:16
+  76 |
+  77 |   const { watch, setValue } = form;
+> 78 |   const name = watch("name");
+     |                ^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  79 |
+  80 |   // Auto-generate slug when name changes (only in create mode or if slug is empty)
+  81 |   useEffect(() => {  react-hooks/incompatible-library
+  142:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  162:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  176:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  191:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  222:31  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  242:33  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  256:33  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/image-upload.tsx
+  112:57  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/product-form.tsx
+   74:42  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  255:37  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  270:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  284:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  300:37  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  365:68  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  365:75  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  365:78  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  365:83  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  365:86  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  365:90  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  375:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  391:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  407:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  440:37  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  471:39  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  520:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  531:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  545:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  556:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  570:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  581:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  595:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/products-client.tsx
+  115:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/proxy.ts
+  4:8  warning  'NextAuth' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 57 problems (43 errors, 14 warnings)
+

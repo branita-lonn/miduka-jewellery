@@ -1,0 +1,42 @@
+
+> single-seller@0.1.0 lint
+> eslint
+
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/api/dashboard/categories/route.ts
+  9:27  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/api/dashboard/products/route.ts
+  11:27  warning  '_req' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/app/dashboard/layout.tsx
+  10:10  warning  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/auth.ts
+  54:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/category-form.tsx
+  79:16  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/category-form.tsx:79:16
+  77 |
+  78 |   const { watch, setValue } = form;
+> 79 |   const name = watch("name");
+     |                ^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  80 |
+  81 |   // Auto-generate slug when name changes (only in create mode or if slug is empty)
+  82 |   useEffect(() => {  react-hooks/incompatible-library
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/image-upload.tsx
+  112:57  warning  '_index' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/components/dashboard/products-client.tsx
+  115:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/jiatan/Desktop/PROJECTS/MiShop/single-seller/proxy.ts
+  4:8  warning  'NextAuth' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 8 problems (0 errors, 8 warnings)
+

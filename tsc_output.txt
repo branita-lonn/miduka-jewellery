@@ -1,0 +1,54 @@
+components/dashboard/category-form.tsx(26,8): error TS2307: Cannot find module '@/components/ui/form' or its corresponding type declarations.
+components/dashboard/category-form.tsx(55,5): error TS2322: Type 'Resolver<{ name: string; slug?: string | undefined; description?: string | undefined; imageUrl?: string | undefined; parentId?: string | null | undefined; sortOrder?: unknown; isActive?: boolean | undefined; }, any, { ...; }>' is not assignable to type 'Resolver<{ name: string; sortOrder: number; isActive: boolean; slug?: string | undefined; description?: string | undefined; imageUrl?: string | undefined; parentId?: string | null | undefined; }, any, { ...; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ name: string; sortOrder: number; isActive: boolean; slug?: string | undefined; description?: string | undefined; imageUrl?: string | undefined; parentId?: string | null | undefined; }>' is not assignable to type 'ResolverOptions<{ name: string; slug?: string | undefined; description?: string | undefined; imageUrl?: string | undefined; parentId?: string | null | undefined; sortOrder?: unknown; isActive?: boolean | undefined; }>'.
+      Type 'unknown' is not assignable to type 'number'.
+components/dashboard/category-form.tsx(138,41): error TS2345: Argument of type '(values: FormValues) => Promise<void>' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'values' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ name: string; sortOrder: number; isActive: boolean; slug?: string | undefined; description?: string | undefined; imageUrl?: string | undefined; parentId?: string | null | undefined; }'.
+      Type 'FieldValues' is missing the following properties from type '{ name: string; sortOrder: number; isActive: boolean; slug?: string | undefined; description?: string | undefined; imageUrl?: string | undefined; parentId?: string | null | undefined; }': name, sortOrder, isActive
+components/dashboard/category-form.tsx(142,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/category-form.tsx(162,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/category-form.tsx(176,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/category-form.tsx(191,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/category-form.tsx(222,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/category-form.tsx(242,24): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/category-form.tsx(256,24): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/image-upload.tsx(109,41): error TS2352: Conversion of type 'ParentNode | null' to type 'string' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'ParentNode' is not comparable to type 'string'.
+components/dashboard/product-form.tsx(26,8): error TS2307: Cannot find module '@/components/ui/form' or its corresponding type declarations.
+components/dashboard/product-form.tsx(74,5): error TS2322: Type 'Resolver<{ name: string; price: unknown; categoryId?: string | null | undefined; compareAtPrice?: unknown; tags?: string[] | undefined; isActive?: boolean | undefined; isFeatured?: boolean | undefined; isOnSale?: boolean | undefined; description?: string | undefined; stockQuantity?: unknown; images?: string[] | unde...' is not assignable to type 'Resolver<{ name: string; price: number; tags: string[]; isActive: boolean; isFeatured: boolean; isOnSale: boolean; stockQuantity: number; images: string[]; variants: { stockQuantity: number; isActive: boolean; ... 5 more ...; sku?: string | undefined; }[]; categoryId?: string | ... 1 more ... | undefined; compareAtP...'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ name: string; price: number; tags: string[]; isActive: boolean; isFeatured: boolean; isOnSale: boolean; stockQuantity: number; images: string[]; variants: { stockQuantity: number; isActive: boolean; ... 5 more ...; sku?: string | undefined; }[]; categoryId?: string | ... 1 more ... | undefined; com...' is not assignable to type 'ResolverOptions<{ name: string; price: unknown; categoryId?: string | null | undefined; compareAtPrice?: unknown; tags?: string[] | undefined; isActive?: boolean | undefined; isFeatured?: boolean | undefined; isOnSale?: boolean | undefined; description?: string | undefined; stockQuantity?: unknown; images?: string[]...'.
+      Types of property 'names' are incompatible.
+        Type 'string[] | undefined' is not assignable to type '("name" | "description" | "price" | "compareAtPrice" | "tags" | "isActive" | "isFeatured" | "isOnSale" | "stockQuantity" | "categoryId" | "images" | "variants")[] | undefined'.
+          Type 'string[]' is not assignable to type '("name" | "description" | "price" | "compareAtPrice" | "tags" | "isActive" | "isFeatured" | "isOnSale" | "stockQuantity" | "categoryId" | "images" | "variants")[]'.
+            Type 'string' is not assignable to type '"name" | "description" | "price" | "compareAtPrice" | "tags" | "isActive" | "isFeatured" | "isOnSale" | "stockQuantity" | "categoryId" | "images" | "variants"'.
+components/dashboard/product-form.tsx(247,43): error TS2345: Argument of type '(values: FormValues) => Promise<void>' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'values' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ name: string; price: number; tags: string[]; isActive: boolean; isFeatured: boolean; isOnSale: boolean; stockQuantity: number; images: string[]; variants: { stockQuantity: number; isActive: boolean; ... 5 more ...; sku?: string | undefined; }[]; categoryId?: string | ... 1 more ... | undefined; compareAtPrice?: nu...'.
+      Type 'FieldValues' is missing the following properties from type '{ name: string; price: number; tags: string[]; isActive: boolean; isFeatured: boolean; isOnSale: boolean; stockQuantity: number; images: string[]; variants: { stockQuantity: number; isActive: boolean; ... 5 more ...; sku?: string | undefined; }[]; categoryId?: string | ... 1 more ... | undefined; compareAtPrice?: nu...': name, price, tags, isActive, and 5 more.
+components/dashboard/product-form.tsx(255,28): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(270,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(284,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(300,28): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(375,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(391,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(407,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(440,28): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(471,30): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(520,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(531,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(545,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(556,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(570,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(581,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(595,40): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(626,28): error TS7031: Binding element 'field' implicitly has an 'any' type.
+components/dashboard/product-form.tsx(632,79): error TS7006: Parameter 'val' implicitly has an 'any' type.
+components/dashboard/products-client.tsx(150,19): error TS2322: Type '{ children: Element; asChild: true; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+components/dashboard/products-client.tsx(254,43): error TS2322: Type '{ children: Element; asChild: true; }' is not assignable to type 'IntrinsicAttributes & Props<unknown>'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & Props<unknown>'.
+components/dashboard/products-client.tsx(274,61): error TS2322: Type '{ children: Element; variant: "ghost"; size: "icon"; asChild: true; }' is not assignable to type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & ButtonProps & VariantProps<(props?: (ConfigVariants<{ variant: { default: string; outline: string; secondary: string; ghost: string; destructive: string; link: string; }; size: { ...; }; }> & ClassProp) | undefined) => string>'.
