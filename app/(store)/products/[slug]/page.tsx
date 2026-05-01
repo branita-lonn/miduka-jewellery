@@ -11,6 +11,7 @@ import ImageGallery from "@/components/store/image-gallery";
 import ProductCard from "@/components/store/product-card";
 import ProductInfo from "@/components/store/product-info";
 import RecentlyViewed from "@/components/store/recently-viewed";
+import ProductRecommendations from "@/components/store/product-recommendations";
 import Script from "next/script";
 import { ProductWithRelationsSerialized } from "@/types";
 import { auth } from "@/auth";
@@ -122,23 +123,7 @@ export default async function ProductDetailPage({ params }: Props) {
     isEligible = !!hasDeliveredOrder && !hasAlreadyReviewed;
   }
 
-  // Fetch related products (same category, different ID)
-  const related = product.categoryId
-    ? await prisma.product.findMany({
-        where: {
-          categoryId: product.categoryId,
-          id: { not: product.id },
-          isActive: true,
-        },
-        include: {
-          category: { select: { name: true, slug: true } },
-          images: { orderBy: { sortOrder: "asc" }, take: 1 },
-          reviews: { select: { rating: true } },
-        },
-        orderBy: { createdAt: "desc" },
-        take: 4,
-      })
-    : [];
+  // AI recommendations will be fetched client-side via ProductRecommendations component
 
   const priceNum = Number(product.price);
   const comparePriceNum = product.compareAtPrice ? Number(product.compareAtPrice) : null;
@@ -250,31 +235,8 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
         </div>
 
-        {/* ─── RELATED PRODUCTS ─────────────────────────────────────────── */}
-        {related.length > 0 && (
-          <section className="flex flex-col gap-6 py-8 border-t border-border">
-            <h2 className="text-2xl font-bold text-foreground">You May Also Like</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {related.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  id={p.id}
-                  slug={p.slug}
-                  name={p.name}
-                  price={Number(p.price)}
-                  compareAtPrice={p.compareAtPrice ? Number(p.compareAtPrice) : null}
-                  primaryImage={p.images[0]?.url ?? null}
-                  category={p.category}
-                  isOnSale={p.isOnSale}
-                  isFeatured={p.isFeatured}
-                  createdAt={p.createdAt.toISOString()}
-                  reviewCount={p.reviews.length}
-                  rating={p.reviews.length > 0 ? p.reviews.reduce((acc, r) => acc + r.rating, 0) / p.reviews.length : 0}
-                />
-              ))}
-            </div>
-          </section>
-        )}
+        {/* ─── AI RECOMMENDATIONS ─────────────────────────────────────────── */}
+        <ProductRecommendations productSlug={product.slug} />
 
         {/* ─── REVIEWS SECTION ───────────────────────────────────────────── */}
         <section className="py-8 border-t border-border">

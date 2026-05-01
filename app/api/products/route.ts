@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import type { ProductPublic, ProductsApiResponse } from "@/types";
+import { generateText } from "@/lib/ai";
 
 export const dynamic = "force-dynamic";
 
@@ -59,37 +60,86 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       ...(inStock && { stockQuantity: { gt: 0 } }),
     };
 
-    const [total, rawProducts] = await Promise.all([
+    const include = {
+      category: { select: { id: true, name: true, slug: true } },
+      images: { select: { id: true, url: true, altText: true, sortOrder: true }, orderBy: { sortOrder: "asc" } as const },
+      variants: {
+        where: { isActive: true },
+        select: {
+          id: true,
+          colour: true,
+          size: true,
+          material: true,
+          priceOverride: true,
+          stockQuantity: true,
+          sku: true,
+          isActive: true,
+        },
+      },
+      reviews: {
+        select: {
+          rating: true,
+        },
+      },
+    };
+
+    let [total, rawProducts] = await Promise.all([
       prisma.product.count({ where }),
       prisma.product.findMany({
         where,
         orderBy,
         skip: (page - 1) * limit,
         take: limit,
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          images: { select: { id: true, url: true, altText: true, sortOrder: true }, orderBy: { sortOrder: "asc" } },
-          variants: {
-            where: { isActive: true },
-            select: {
-              id: true,
-              colour: true,
-              size: true,
-              material: true,
-              priceOverride: true,
-              stockQuantity: true,
-              sku: true,
-              isActive: true,
-            },
-          },
-          reviews: {
-            select: {
-              rating: true,
-            },
-          },
-        },
+        include,
       }),
     ]);
+
+    let expandedFrom: string | null = null;
+
+    // Smart Expansion: If no results and there was a query, try expanding the search
+    if (total === 0 && q) {
+        try {
+            const expansionPrompt = `Expand the search term "${q}" into semantically similar alternatives for a fashion/lifestyle e-commerce store. Instruct the model to respond with ONLY a JSON array of strings — no explanation, no markdown. Example: "blue dress" -> ["navy dress", "cobalt dress", "royal blue dress", "blue maxi dress"]`;
+            const expansionJson = await generateText(expansionPrompt, 200);
+            
+            // Clean up possible markdown wrappers if AI didn't follow "ONLY JSON" instruction
+            const cleanJson = expansionJson.replace(/```json|```/g, "").trim();
+            const expandedTerms: string[] = JSON.parse(cleanJson);
+            
+            if (Array.isArray(expandedTerms) && expandedTerms.length > 0) {
+                const expandedWhere: Prisma.ProductWhereInput = {
+                    ...where,
+                    OR: expandedTerms.map(term => ({
+                        OR: [
+                            { name: { contains: term, mode: "insensitive" } },
+                            { description: { contains: term, mode: "insensitive" } },
+                            { tags: { has: term } },
+                        ]
+                    }))
+                };
+                
+                const [expTotal, expRawProducts] = await Promise.all([
+                    prisma.product.count({ where: expandedWhere }),
+                    prisma.product.findMany({
+                        where: expandedWhere,
+                        orderBy,
+                        skip: (page - 1) * limit,
+                        take: limit,
+                        include,
+                    }),
+                ]);
+                
+                if (expTotal > 0) {
+                    total = expTotal;
+                    rawProducts = expRawProducts;
+                    expandedFrom = q;
+                }
+            }
+        } catch (e) {
+            console.error("[SEARCH_EXPANSION_ERROR]", e);
+            // Fallback: return original empty results
+        }
+    }
 
     const products: ProductPublic[] = rawProducts.map((p) => ({
       id: p.id,
@@ -134,6 +184,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       total,
       pages: Math.ceil(total / limit),
       currentPage: page,
+      expandedFrom,
     };
 
     return NextResponse.json(response);

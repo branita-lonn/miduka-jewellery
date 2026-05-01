@@ -73,6 +73,7 @@ export interface ProductsApiResponse {
   total: number;
   pages: number;
   currentPage: number;
+  expandedFrom?: string | null;
 }
 
 export interface ProductCardProps {

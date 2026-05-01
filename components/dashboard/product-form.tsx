@@ -71,6 +71,8 @@ export function ProductForm({ initialData, categories }: ProductFormProps) {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [tagInput, setTagInput] = useState("");
+  const [priceSuggestion, setPriceSuggestion] = useState<string | null>(null);
+  const [priceLoading, setPriceLoading] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
@@ -143,6 +145,34 @@ export function ProductForm({ initialData, categories }: ProductFormProps) {
 
   const prevStep = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const handlePriceBlur = async () => {
+    const price = form.getValues("price");
+    const categoryId = form.getValues("categoryId");
+    const name = form.getValues("name");
+
+    if (!price || !categoryId || categoryId === "none") {
+      setPriceSuggestion(null);
+      return;
+    }
+
+    try {
+      setPriceLoading(true);
+      const res = await fetch("/api/ai/price-suggestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, categoryId, variants: form.getValues("variants") }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPriceSuggestion(data.message);
+      }
+    } catch (e) {
+      // Fail silently
+    } finally {
+      setPriceLoading(false);
+    }
   };
 
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -283,8 +313,27 @@ export function ProductForm({ initialData, categories }: ProductFormProps) {
                     <FormItem>
                       <FormLabel>Price (KES)</FormLabel>
                       <FormControl>
-                        <Input type="number" disabled={loading} placeholder="0.00" {...field} />
+                        <Input 
+                          type="number" 
+                          disabled={loading} 
+                          placeholder="0.00" 
+                          {...field} 
+                          onBlur={(e) => {
+                            field.onBlur();
+                            handlePriceBlur();
+                          }}
+                        />
                       </FormControl>
+                      {priceLoading ? (
+                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground animate-pulse">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Analyzing market price...
+                        </div>
+                      ) : priceSuggestion ? (
+                        <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 font-medium animate-in fade-in slide-in-from-top-1 duration-300">
+                          {priceSuggestion}
+                        </p>
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}

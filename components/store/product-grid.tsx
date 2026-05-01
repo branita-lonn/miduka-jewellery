@@ -47,6 +47,7 @@ export default function ProductGrid({ defaultCategory, defaultQ }: ProductGridPr
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [expandedFrom, setExpandedFrom] = useState<string | null>(null);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -66,6 +67,7 @@ export default function ProductGrid({ defaultCategory, defaultQ }: ProductGridPr
       setTotalPages(data.pages);
       setCurrentPage(data.currentPage);
       setTotal(data.total);
+      setExpandedFrom(data.expandedFrom || null);
     } catch (error: unknown) {
       console.error(error);
       setProducts([]);
@@ -102,10 +104,17 @@ export default function ProductGrid({ defaultCategory, defaultQ }: ProductGridPr
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Result count */}
-      <p className="text-sm text-muted-foreground">
-        {total} result{total !== 1 ? "s" : ""}
-      </p>
+      {/* Result count & Expansion Notice */}
+      <div className="flex flex-col gap-1">
+        <p className="text-sm text-muted-foreground">
+          {total} result{total !== 1 ? "s" : ""}
+        </p>
+        {expandedFrom && (
+          <p className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full w-fit animate-in fade-in slide-in-from-left-2 duration-500">
+            Showing results for &ldquo;<span className="font-semibold text-foreground italic">{expandedFrom}</span>&rdquo; and similar terms
+          </p>
+        )}
+      </div>
 
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
