@@ -14,6 +14,7 @@ import { Loader2, Plus, Trash2, Wand2, X } from "lucide-react";
 
 import { CategoryWithRelations, ProductWithRelationsSerialized } from "@/types";
 import { ImageUpload } from "./image-upload";
+import { AiDescriptionButton } from "./ai-description-button";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -439,10 +440,19 @@ export function ProductForm({ initialData, categories }: ProductFormProps) {
                   <h3 className="text-lg font-medium">Product Description</h3>
                   <p className="text-sm text-muted-foreground">Detailed information about your product.</p>
                 </div>
-                <Button type="button" variant="outline" size="sm" className="gap-2 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-900/40">
-                  <Wand2 className="h-4 w-4" />
-                  Generate with AI
-                </Button>
+                <AiDescriptionButton 
+                  formData={{
+                    name: form.watch("name"),
+                    categoryId: form.watch("categoryId"),
+                    tags: form.watch("tags"),
+                    variants: form.watch("variants"),
+                    price: form.watch("price"),
+                    compareAtPrice: form.watch("compareAtPrice"),
+                    isOnSale: form.watch("isOnSale"),
+                  }}
+                  onGenerated={(description) => form.setValue("description", description)}
+                  disabled={loading}
+                />
               </div>
 
               <FormField
