@@ -182,7 +182,13 @@ export function ReviewsClient({ initialReviews }: ReviewsClientProps) {
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-10 rounded-xl overflow-hidden bg-muted flex-shrink-0">
                           {review.product.images[0] ? (
-                            <Image src={review.product.images[0].url} alt={review.product.name} fill className="object-cover" />
+                            <Image 
+                              src={review.product.images[0].url} 
+                              alt={review.product.name} 
+                              fill 
+                              className="object-cover" 
+                              sizes="40px"
+                            />
                           ) : (
                             <div className="w-full h-full bg-primary/10" />
                           )}
@@ -304,7 +310,13 @@ export function ReviewsClient({ initialReviews }: ReviewsClientProps) {
                               <div className="flex gap-2 mt-4">
                                 {review.photos.map((photo, i) => (
                                   <div key={i} className="relative h-16 w-16 rounded-xl overflow-hidden border">
-                                    <Image src={photo} alt="Review photo" fill className="object-cover" />
+                                    <Image 
+                                      src={photo} 
+                                      alt="Review photo" 
+                                      fill 
+                                      className="object-cover" 
+                                      sizes="64px"
+                                    />
                                   </div>
                                 ))}
                               </div>

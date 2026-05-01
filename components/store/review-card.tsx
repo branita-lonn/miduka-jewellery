@@ -147,6 +147,7 @@ export function ReviewCard({ review, onVoteSuccess }: ReviewCardProps) {
                     alt={`Review photo ${i + 1}`}
                     fill
                     className="object-cover"
+                    sizes="80px"
                   />
                 </div>
               </DialogTrigger>

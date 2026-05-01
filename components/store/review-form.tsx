@@ -212,7 +212,13 @@ export function ReviewForm({ productId, onSuccess, onCancel }: ReviewFormProps) 
           <div className="grid grid-cols-5 gap-3">
             {photos.map((url) => (
               <div key={url} className="relative aspect-square rounded-2xl overflow-hidden border border-border/50 group">
-                <Image src={url} alt="Review upload" fill className="object-cover" />
+                <Image 
+                  src={url} 
+                  alt="Review upload" 
+                  fill 
+                  className="object-cover" 
+                  sizes="(max-width: 768px) 20vw, 100px"
+                />
                 <button
                   type="button"
                   onClick={() => removePhoto(url)}
