@@ -11,6 +11,22 @@ import PwaInstallPrompt from "@/components/store/pwa-install-prompt";
 import { ChatWidget } from "@/components/store/chat-widget";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await prisma.storeSettings.findFirst({
+    select: {
+      metaTitle: true,
+      metaDescription: true,
+      storeName: true,
+    }
+  });
+
+  return {
+    title: settings?.metaTitle || settings?.storeName || "MiDuka",
+    description: settings?.metaDescription || "Your neighbourhood store, online.",
+  };
+}
 
 export default async function StoreLayout({
   children,

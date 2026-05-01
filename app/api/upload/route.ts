@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { uploadImage } from "@/lib/cloudinary";
 
-const ALLOWED_FOLDERS = ["miduka/products", "miduka/categories", "miduka/settings", "miduka/reviews"];
+const ALLOWED_FOLDERS = ["miduka/products", "miduka/categories", "miduka/settings", "miduka/reviews", "miduka/branding"];
 
 interface UploadRequest {
   base64: string;

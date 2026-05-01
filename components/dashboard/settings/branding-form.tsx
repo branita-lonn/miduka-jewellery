@@ -143,9 +143,12 @@ export function BrandingForm({ initialData }: BrandingFormProps) {
             <CardHeader className="bg-muted/30">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Search className="h-4 w-4" />
-                SEO Settings
+                SEO & Store Identity
               </CardTitle>
-              <CardDescription>Control how your store appears in search engines.</CardDescription>
+              <CardDescription>
+                These settings define your store's name and how it appears in browser tabs and search engines. 
+                Note: "Meta Title" will be used as the primary browser tab title.
+              </CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <FormField

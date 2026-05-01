@@ -27,13 +27,23 @@ export default async function StoreFooter() {
       storeTagline: true,
       socialLinks: true,
       returnPolicy: true,
+      businessHours: true,
     },
   });
 
   const storeName = settings?.storeName ?? "MiDuka";
   const tagline = settings?.storeTagline ?? "Your neighbourhood store, online.";
   const socialLinks = (settings?.socialLinks ?? null) as SocialLinks | null;
+  const businessHours = settings?.businessHours as any;
   const year = new Date().getFullYear();
+
+  const FacebookIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+  );
+
+  const InstagramIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+  );
 
   return (
     <footer className="bg-card border-t border-border mt-auto">
@@ -57,7 +67,7 @@ export default async function StoreFooter() {
                     aria-label="Instagram"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Globe className="h-5 w-5" />
+                    <InstagramIcon className="h-5 w-5" />
                   </a>
                 )}
                 {socialLinks.facebook && (
@@ -68,7 +78,7 @@ export default async function StoreFooter() {
                     aria-label="Facebook"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Globe className="h-5 w-5" />
+                    <FacebookIcon className="h-5 w-5" />
                   </a>
                 )}
                 {socialLinks.tiktok && (
@@ -112,6 +122,23 @@ export default async function StoreFooter() {
               </Link>
             )}
           </div>
+
+          {/* Business Hours */}
+          {businessHours && (
+            <div className="flex flex-col gap-2 text-sm">
+              <span className="font-semibold text-foreground mb-1">Opening Hours</span>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-muted-foreground">
+                {Object.entries(businessHours).map(([day, data]: [string, any]) => (
+                  <div key={day} className="contents">
+                    <span className="capitalize">{day}</span>
+                    <span>
+                      {data.isOpen ? `${data.open} - ${data.close}` : "Closed"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="border-t border-border mt-8 pt-6 text-center text-xs text-muted-foreground">

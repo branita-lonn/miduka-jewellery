@@ -83,9 +83,12 @@ export function ContentManager({ initialData }: ContentManagerProps) {
               <CardHeader className="bg-muted/30">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Layout className="h-4 w-4" />
-                  Hero Section
+                  Hero Section (Home Page Banner)
                 </CardTitle>
-                <CardDescription>Manage the main banner of your home page.</CardDescription>
+                <CardDescription>
+                  This overrides the default store name and tagline on your home page banner. 
+                  If left empty, the storefront will fallback to your Store Name and Tagline from the Profile tab.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <FormField

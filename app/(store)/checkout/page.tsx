@@ -91,12 +91,34 @@ export default function CheckoutPage() {
     }
   }, [cartLoading, items.length, router]);
 
-  // Pre-fill logged-in user data
+  const [settings, setSettings] = useState<any>(null);
+
+  // Pre-fill logged-in user data and fetch settings
   useEffect(() => {
     if (session?.user && sessionStatus === "authenticated") {
       contactForm.setValue("fullName", session.user.name ?? "");
       contactForm.setValue("email", session.user.email ?? "");
     }
+
+    async function fetchSettings() {
+      try {
+        const res = await fetch("/api/dashboard/settings");
+        if (res.ok) {
+          const data = await res.json();
+          setSettings(data);
+          
+          // Set default payment method based on enabled ones
+          if (data.enableMpesa === false && data.enableStripe !== false) {
+            setPaymentMethod("STRIPE");
+          } else if (data.enableStripe === false && data.enableMpesa !== false) {
+            setPaymentMethod("MPESA");
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings", err);
+      }
+    }
+    void fetchSettings();
   }, [session, sessionStatus, contactForm]);
 
   // Handle county change to fetch shipping cost
@@ -382,48 +404,58 @@ export default function CheckoutPage() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {/* M-Pesa Option */}
-                    <div 
-                      className={`relative flex items-center p-4 border rounded-2xl cursor-pointer transition-colors ${paymentMethod === "MPESA" ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10" : "border-border hover:border-emerald-500/50"}`}
-                      onClick={() => setPaymentMethod("MPESA")}
-                    >
-                      <input 
-                        type="radio" 
-                        name="paymentMethod" 
-                        value="MPESA" 
-                        checked={paymentMethod === "MPESA"} 
-                        onChange={() => setPaymentMethod("MPESA")}
-                        className="sr-only"
-                      />
-                      <div className="flex flex-col gap-1">
-                        <span className="font-bold text-emerald-600 dark:text-emerald-400">M-PESA STK Push</span>
-                        <span className="text-xs text-muted-foreground">Pay instantly via Safaricom</span>
+                    {settings?.enableMpesa !== false && (
+                      <div 
+                        className={`relative flex items-center p-4 border rounded-2xl cursor-pointer transition-colors ${paymentMethod === "MPESA" ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10" : "border-border hover:border-emerald-500/50"}`}
+                        onClick={() => setPaymentMethod("MPESA")}
+                      >
+                        <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="MPESA" 
+                          checked={paymentMethod === "MPESA"} 
+                          onChange={() => setPaymentMethod("MPESA")}
+                          className="sr-only"
+                        />
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">M-PESA STK Push</span>
+                          <span className="text-xs text-muted-foreground">Pay instantly via Safaricom</span>
+                        </div>
+                        <div className={`ml-auto h-4 w-4 rounded-full border border-emerald-500 flex items-center justify-center ${paymentMethod === "MPESA" ? "bg-emerald-500" : ""}`}>
+                          {paymentMethod === "MPESA" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </div>
                       </div>
-                      <div className={`ml-auto h-4 w-4 rounded-full border border-emerald-500 flex items-center justify-center ${paymentMethod === "MPESA" ? "bg-emerald-500" : ""}`}>
-                        {paymentMethod === "MPESA" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
-                      </div>
-                    </div>
+                    )}
 
                     {/* Stripe Option */}
-                    <div 
-                      className={`relative flex items-center p-4 border rounded-2xl cursor-pointer transition-colors ${paymentMethod === "STRIPE" ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10" : "border-border hover:border-indigo-500/50"}`}
-                      onClick={() => setPaymentMethod("STRIPE")}
-                    >
-                      <input 
-                        type="radio" 
-                        name="paymentMethod" 
-                        value="STRIPE" 
-                        checked={paymentMethod === "STRIPE"} 
-                        onChange={() => setPaymentMethod("STRIPE")}
-                        className="sr-only"
-                      />
-                      <div className="flex flex-col gap-1">
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400">Card Payment</span>
-                        <span className="text-xs text-muted-foreground">Visa, Mastercard via Stripe</span>
+                    {settings?.enableStripe !== false && (
+                      <div 
+                        className={`relative flex items-center p-4 border rounded-2xl cursor-pointer transition-colors ${paymentMethod === "STRIPE" ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10" : "border-border hover:border-indigo-500/50"}`}
+                        onClick={() => setPaymentMethod("STRIPE")}
+                      >
+                        <input 
+                          type="radio" 
+                          name="paymentMethod" 
+                          value="STRIPE" 
+                          checked={paymentMethod === "STRIPE"} 
+                          onChange={() => setPaymentMethod("STRIPE")}
+                          className="sr-only"
+                        />
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-indigo-600 dark:text-indigo-400">Card Payment</span>
+                          <span className="text-xs text-muted-foreground">Visa, Mastercard via Stripe</span>
+                        </div>
+                        <div className={`ml-auto h-4 w-4 rounded-full border border-indigo-500 flex items-center justify-center ${paymentMethod === "STRIPE" ? "bg-indigo-500" : ""}`}>
+                          {paymentMethod === "STRIPE" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                        </div>
                       </div>
-                      <div className={`ml-auto h-4 w-4 rounded-full border border-indigo-500 flex items-center justify-center ${paymentMethod === "STRIPE" ? "bg-indigo-500" : ""}`}>
-                        {paymentMethod === "STRIPE" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                    )}
+                    
+                    {settings?.enableMpesa === false && settings?.enableStripe === false && (
+                      <div className="col-span-full p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center font-medium">
+                        Online payments are temporarily unavailable. Please contact the store.
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 

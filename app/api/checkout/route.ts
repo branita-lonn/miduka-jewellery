@@ -198,6 +198,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       customerName: fullName,
     });
 
+    // 4.6. Check for WhatsApp Notifications
+    const settings = await prisma.storeSettings.findFirst({
+      select: { whatsappOrderNotifications: true, whatsappNotificationNumber: true }
+    });
+
+    if (settings?.whatsappOrderNotifications) {
+      const sendingNumber = settings.whatsappNotificationNumber || "SYSTEM";
+      console.log(`[WHATSAPP_NOTIFICATION] From: ${sendingNumber} To: ${phone}`);
+      console.log(`Message: Hello ${fullName}, your order ${order.orderNumber} for KES ${totalAmount} has been received!`);
+    }
+
     // 5. Trigger Payment Integrations
     if (paymentMethod === "MPESA") {
       try {

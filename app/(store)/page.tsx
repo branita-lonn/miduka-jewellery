@@ -122,14 +122,14 @@ export default async function HomePage() {
               <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full bg-primary/10 blur-3xl" />
             </div>
             <h1 className="relative text-5xl md:text-7xl font-extrabold tracking-tight text-foreground">
-              {storeName}
+              {settings?.heroHeadline || storeName}
             </h1>
             <p className="relative text-lg md:text-xl text-muted-foreground max-w-lg">
-              {tagline}
+              {settings?.heroSubheadline || tagline}
             </p>
-            <Link href="/categories">
+            <Link href={settings?.heroCtaLink || "/categories"}>
               <Button size="lg" className="relative rounded-full px-10">
-                Shop Now
+                {settings?.heroCtaText || "Shop Now"}
               </Button>
             </Link>
           </div>
