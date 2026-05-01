@@ -62,14 +62,17 @@ model User {
   password      String?
   image         String?
   role          UserRole  @default(CUSTOMER)
+  phone         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts  Account[]
-  sessions  Session[]
-  cart      Cart?
-  orders    Order[]
-  addresses Address[]
+  accounts     Account[]
+  sessions     Session[]
+  cart         Cart?
+  orders       Order[]
+  addresses    Address[]
+  wishlist     Wishlist?
+  stockAlerts  StockAlert[]
 }
 
 model Account {
@@ -151,11 +154,13 @@ model Product {
   updatedAt      DateTime @updatedAt
   categoryId     String?
 
-  category   Category?       @relation(fields: [categoryId], references: [id])
-  images     ProductImage[]
-  variants   ProductVariant[]
-  cartItems  CartItem[]
-  orderItems OrderItem[]
+  category      Category?        @relation(fields: [categoryId], references: [id])
+  images        ProductImage[]
+  variants      ProductVariant[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  wishlistItems WishlistItem[]
+  stockAlerts   StockAlert[]
 }
 
 model Category {
@@ -199,9 +204,10 @@ model ProductVariant {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems  CartItem[]
-  orderItems OrderItem[]
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  stockAlerts StockAlert[]
 }
 
 // ─── CART ─────────────────────────────────────────────────────────────────────
@@ -340,5 +346,46 @@ model DeliveryZone {
   sortOrder             Int      @default(0)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+}
+
+// ─── CUSTOMER FEATURES ────────────────────────────────────────────────────────
+
+model Wishlist {
+  id         String   @id @default(cuid())
+  customerId String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer User           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items    WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  productId  String
+  createdAt  DateTime @default(now())
+
+  wishlist Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+}
+
+model StockAlert {
+  id         String   @id @default(cuid())
+  email      String
+  customerId String?
+  productId  String
+  variantId  String?
+  isNotified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  customer User?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  product  Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant  ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([productId, isNotified])
+  @@index([email])
 }
 
