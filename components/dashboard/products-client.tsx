@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Edit, Search, Trash2 } from "lucide-react";
+import { Plus, Edit, Search, Trash2, Upload } from "lucide-react";
 import { ProductWithRelationsSerialized } from "@/types";
 import { InlineConfirmDelete } from "@/components/dashboard/inline-confirm-delete";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -147,6 +147,10 @@ export function ProductsClient({ initialProducts }: { initialProducts: ProductWi
               Delete Selected ({selectedIds.size})
             </Button>
           )}
+          <Link href="/dashboard/products/import" className={cn(buttonVariants({ variant: "outline" }))}>
+            <Upload className="mr-2 h-4 w-4" />
+            Import
+          </Link>
           <Link href="/dashboard/products/new" className={cn(buttonVariants({ variant: "default" }))}>
             <Plus className="mr-2 h-4 w-4" />
             Add Product
