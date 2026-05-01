@@ -10,7 +10,8 @@ import {
   Heart, 
   MapPin, 
   User, 
-  ChevronRight 
+  ChevronRight,
+  Coins
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,11 @@ const navItems = [
     title: "Wishlist",
     href: "/account/wishlist",
     icon: Heart,
+  },
+  {
+    title: "Loyalty Points",
+    href: "/account/loyalty",
+    icon: Coins,
   },
   {
     title: "Addresses",

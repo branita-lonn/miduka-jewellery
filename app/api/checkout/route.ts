@@ -190,6 +190,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return newOrder;
     });
 
+    // 4.3 Earn Loyalty Points (if logged in)
+    if (customerId) {
+      const { earnPoints } = await import("@/lib/loyalty");
+      await earnPoints(order.id);
+    }
+
     // 4.5. Notify Store Owners via Socket.io
     emitNewOrder({
       orderId: order.id,
