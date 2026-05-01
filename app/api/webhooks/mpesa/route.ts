@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PaymentStatus, OrderStatus } from "@prisma/client";
+import { sendOrderConfirmation } from "@/lib/mail";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -52,16 +53,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const receiptItem = metadataItems.find((i: any) => i.Name === "MpesaReceiptNumber");
       const mpesaReceipt = receiptItem?.Value?.toString();
 
-      await prisma.order.update({
+      const updatedOrder = await prisma.order.update({
         where: { id: order.id },
         data: {
           paymentStatus: PaymentStatus.PAID,
           status: OrderStatus.CONFIRMED,
           mpesaReceiptNumber: mpesaReceipt,
         },
+        include: { shippingAddress: true, customer: true }
       });
 
-      // TODO (Commit 4): Trigger email confirmation here
+      // Trigger email confirmation
+      await sendOrderConfirmation({
+        email: updatedOrder.customer?.email ?? updatedOrder.guestEmail ?? "",
+        orderNumber: updatedOrder.orderNumber,
+        customerName: updatedOrder.customer?.name ?? updatedOrder.guestName ?? "Customer",
+        totalAmount: Number(updatedOrder.total),
+        shippingAddress: `${updatedOrder.shippingAddress.addressLine1}, ${updatedOrder.shippingAddress.city}`,
+        orderId: updatedOrder.id,
+      });
     } else {
       // Payment failed or was cancelled by user
       await prisma.order.update({
