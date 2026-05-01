@@ -3,7 +3,9 @@
 
 import { Resend } from "resend";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmation";
+import { OrderStatusUpdateEmail } from "@/emails/order-status-update";
 import React from "react";
+import { OrderStatus } from "@prisma/client";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -42,5 +44,39 @@ export async function sendOrderConfirmation({
   } catch (error) {
     console.error("Failed to send order confirmation email:", error);
     // We don't throw here to avoid failing the whole checkout/webhook flow
+  }
+}
+
+interface SendOrderStatusUpdateParams {
+  email: string;
+  orderNumber: string;
+  customerName: string;
+  status: OrderStatus;
+  orderId: string;
+}
+
+export async function sendOrderStatusUpdate({
+  email,
+  orderNumber,
+  customerName,
+  status,
+  orderId,
+}: SendOrderStatusUpdateParams) {
+  try {
+    const statusUrl = `${process.env.NEXTAUTH_URL}/account/orders/${orderId}`;
+    
+    await resend.emails.send({
+      from: "MiDuka <orders@miduka.com>",
+      to: email,
+      subject: `Order Update: ${orderNumber} is now ${status.replace("_", " ")}`,
+      react: React.createElement(OrderStatusUpdateEmail, {
+        orderNumber,
+        customerName,
+        status,
+        statusUrl,
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to send order status update email:", error);
   }
 }
