@@ -24,8 +24,8 @@ import { toast } from "sonner";
 import { Loader2, Save, MessageSquare } from "lucide-react";
 
 const notificationSchema = z.object({
-  whatsappOrderNotifications: z.boolean(),
-  whatsappNotificationNumber: z.string().optional(),
+  whatsappEnabled: z.boolean(),
+  whatsappNumber: z.string().optional(),
 });
 
 type NotificationValues = z.infer<typeof notificationSchema>;
@@ -40,8 +40,8 @@ export function NotificationSettings({ initialData }: NotificationSettingsProps)
   const form = useForm<NotificationValues>({
     resolver: zodResolver(notificationSchema),
     defaultValues: {
-      whatsappOrderNotifications: initialData?.whatsappOrderNotifications ?? false,
-      whatsappNotificationNumber: initialData?.whatsappNotificationNumber || "",
+      whatsappEnabled: initialData?.whatsappEnabled ?? false,
+      whatsappNumber: initialData?.whatsappNumber || "",
     },
   });
 
@@ -73,19 +73,19 @@ export function NotificationSettings({ initialData }: NotificationSettingsProps)
             <CardHeader className="bg-muted/30">
               <CardTitle className="text-lg flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
-                WhatsApp Notifications
+                WhatsApp Order Confirmation
               </CardTitle>
-              <CardDescription>Automate customer updates via WhatsApp.</CardDescription>
+              <CardDescription>Buyers will see a button to confirm their order via WhatsApp after checkout.</CardDescription>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <FormField
                 control={form.control}
-                name="whatsappOrderNotifications"
+                name="whatsappEnabled"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-2xl border p-4 bg-background/50">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base font-bold">Order Confirmations</FormLabel>
-                      <FormDescription>Send automated WhatsApp message on new orders.</FormDescription>
+                      <FormLabel className="text-base font-bold">Enable WhatsApp Confirmation</FormLabel>
+                      <FormDescription>Show the confirmation button on the success page.</FormDescription>
                     </div>
                     <FormControl>
                       <Switch
@@ -99,14 +99,14 @@ export function NotificationSettings({ initialData }: NotificationSettingsProps)
 
               <FormField
                 control={form.control}
-                name="whatsappNotificationNumber"
+                name="whatsappNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>WhatsApp Sending Number</FormLabel>
+                    <FormLabel>Store WhatsApp Number</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="+254..." className="rounded-2xl border-border/50 bg-background/50 h-11" />
                     </FormControl>
-                    <FormDescription>The number used to send notifications (if different from contact number).</FormDescription>
+                    <FormDescription>International format (e.g., +254712345678). This number will receive the confirmation messages.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

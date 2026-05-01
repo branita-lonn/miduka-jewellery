@@ -9,8 +9,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Gift, Plus, Trash2, Copy, Check, Calendar } from "lucide-react";
+import { Gift, Plus, Trash2, Copy, Check, Calendar, Download, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import Papa from "papaparse";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +64,7 @@ export function GiftCardsClient({ initialGiftCards }: GiftCardsClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const form = useForm<GiftCardFormValues>({
     resolver: zodResolver(giftCardSchema),
@@ -128,6 +130,40 @@ export function GiftCardsClient({ initialGiftCards }: GiftCardsClientProps) {
     setTimeout(() => setCopiedCode(null), 2000);
     toast.success("Code copied to clipboard");
   };
+  const handleDownloadCSV = () => {
+    if (initialGiftCards.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const csvData = initialGiftCards.map(gc => ({
+        Code: gc.code,
+        "Initial Value": gc.initialValue,
+        "Remaining Value": gc.remainingValue,
+        Status: gc.isActive ? "Active" : "Disabled",
+        "Created At": format(new Date(gc.createdAt), "yyyy-MM-dd HH:mm"),
+        "Expires At": gc.expiresAt ? format(new Date(gc.expiresAt), "yyyy-MM-dd") : "N/A",
+      }));
+
+      const csv = Papa.unparse(csvData);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `gift-cards-${format(new Date(), "yyyy-MM-dd")}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("CSV download started");
+    } catch (error) {
+      toast.error("Failed to export CSV");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -136,6 +172,15 @@ export function GiftCardsClient({ initialGiftCards }: GiftCardsClientProps) {
           <h2 className="text-3xl font-bold tracking-tight">Gift Cards</h2>
           <p className="text-muted-foreground font-medium">Issue store credit and track redemptions.</p>
         </div>
+        <Button 
+          variant="outline" 
+          className="rounded-full gap-2" 
+          onClick={handleDownloadCSV}
+          disabled={isExporting || initialGiftCards.length === 0}
+        >
+          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          Download CSV
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

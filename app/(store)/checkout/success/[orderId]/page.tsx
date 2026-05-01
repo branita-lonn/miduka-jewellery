@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
 import { CheckCircle2, Package, MapPin, CreditCard, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MessageCircle } from "lucide-react";
+import { sendWhatsAppOrderConfirmation } from "@/lib/whatsapp";
 
 export default async function CheckoutSuccessPage({
   params,
@@ -28,6 +30,8 @@ export default async function CheckoutSuccessPage({
       },
     },
   });
+
+  const settings = await prisma.storeSettings.findFirst();
 
   if (!order) return notFound();
 
@@ -177,14 +181,37 @@ export default async function CheckoutSuccessPage({
         </div>
       </div>
 
-      <div className="mt-12 flex justify-center">
-        <Link 
-          href="/"
-          className="inline-flex items-center justify-center h-12 gap-2 px-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/80 font-bold transition-colors"
-        >
-          Continue Shopping <ChevronRight className="h-5 w-5" />
         </Link>
       </div>
+
+      {settings?.whatsappEnabled && settings?.whatsappNumber && (
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Optional</p>
+          <a
+            href={sendWhatsAppOrderConfirmation({
+              buyerName: order.customer?.name ?? order.guestName ?? "Guest",
+              orderNumber: order.id.slice(-8).toUpperCase(),
+              orderItems: order.items.map(item => ({
+                name: item.product.name,
+                quantity: item.quantity,
+                price: Number(item.unitPrice)
+              })),
+              total: Number(order.total),
+              storeWhatsAppNumber: settings.whatsappNumber,
+              storeName: settings.storeName,
+            })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center h-12 gap-2 px-8 rounded-full bg-[#25D366] text-white hover:bg-[#128C7E] font-bold transition-colors shadow-lg"
+          >
+            <MessageCircle className="h-5 w-5" />
+            Confirm via WhatsApp
+          </a>
+          <p className="text-[10px] text-muted-foreground max-w-xs text-center">
+            Clicking this will open WhatsApp with a pre-filled message for our support team.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
