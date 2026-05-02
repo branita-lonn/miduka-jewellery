@@ -106,18 +106,21 @@ export default function AccountSidebar({ customer }: AccountSidebarProps) {
                     href={item.href}
                     onClick={() => setIsExpanded(false)}
                     className={cn(
-                      "flex items-center px-3 lg:px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 group relative",
+                      "flex items-center px-3 lg:px-4 py-3 rounded-2xl text-sm transition-all duration-200 group relative",
                       isActive 
-                        ? "bg-primary text-primary-foreground shadow-md" 
-                        : "hover:bg-muted text-muted-foreground hover:text-foreground",
+                        ? "bg-muted text-foreground font-bold shadow-sm" 
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-foreground",
                       !isExpanded && "justify-center lg:justify-between"
                     )}
                     title={!isExpanded ? item.title : undefined}
                   >
+                    {isActive && (
+                      <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-full animate-in slide-in-from-left-full duration-300" />
+                    )}
                     <div className="flex items-center gap-3">
                       <item.icon className={cn(
                         "w-5 h-5 lg:w-4 lg:h-4 shrink-0 transition-colors",
-                        isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-primary"
+                        isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"
                       )} />
                       <span className={cn(!isExpanded && "hidden lg:inline")}>{item.title}</span>
                     </div>

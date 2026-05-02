@@ -148,7 +148,7 @@ export default async function HomePage() {
               )}
               {settings.heroCtaText && settings.heroCtaLink && (
                 <Link href={settings.heroCtaLink}>
-                  <Button size="lg" className="rounded-full px-8 w-fit">
+                  <Button size="lg" className="rounded-full w-fit">
                     {settings.heroCtaText}
                   </Button>
                 </Link>
@@ -169,7 +169,7 @@ export default async function HomePage() {
               {settings?.heroSubheadline || tagline}
             </p>
             <Link href={settings?.heroCtaLink || "/categories"}>
-              <Button size="lg" className="relative rounded-full px-10">
+              <Button size="lg" className="relative rounded-full">
                 {settings?.heroCtaText || "Shop Now"}
               </Button>
             </Link>
@@ -236,9 +236,9 @@ export default async function HomePage() {
                     <p className="font-semibold text-sm text-foreground line-clamp-1">
                       {cat.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    {/* <p className="text-xs text-muted-foreground">
                       {cat._count.products} item{cat._count.products !== 1 ? "s" : ""}
-                    </p>
+                    </p> */}
                   </div>
                 </Link>
               ))}

@@ -63,9 +63,9 @@ export default async function CategoriesPage() {
               </div>
               <div>
                 <p className="font-semibold text-foreground line-clamp-1">{cat.name}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                {/* <p className="text-xs text-muted-foreground mt-0.5">
                   {cat._count.products} item{cat._count.products !== 1 ? "s" : ""}
-                </p>
+                </p> */}
               </div>
             </Link>
           ))}
