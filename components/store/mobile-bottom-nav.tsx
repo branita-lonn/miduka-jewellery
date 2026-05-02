@@ -5,15 +5,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Grid2X2, ShoppingCart, Heart, User } from "lucide-react";
+import { Home, Grid2X2, ShoppingCart, Gift, User, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/components/store/cart-provider";
 
 const TABS = [
   { href: "/", label: "Home", icon: Home, badge: undefined },
+  { href: "/search", label: "Products", icon: Search, badge: undefined },
   { href: "/categories", label: "Categories", icon: Grid2X2, badge: undefined },
+  { href: "/gift-cards", label: "Gift Cards", icon: Gift, badge: undefined },
   { href: "/cart", label: "Cart", icon: ShoppingCart, badge: 0 },
-  { href: "/account/wishlist", label: "Wishlist", icon: Heart, badge: undefined },
   { href: "/account", label: "Account", icon: User, badge: undefined },
 ] as const;
 

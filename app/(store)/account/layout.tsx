@@ -28,12 +28,12 @@ export default async function AccountLayout({ children }: { children: React.Reac
   };
 
   return (
-    <div className="container mx-auto py-10 px-4 md:px-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside className="lg:col-span-1">
+    <div className="container mx-auto py-6 lg:py-10 px-4 md:px-8">
+      <div className="flex flex-row gap-4 lg:gap-8">
+        <aside className="shrink-0 z-30">
           <AccountSidebar customer={customer} />
         </aside>
-        <main className="lg:col-span-3">
+        <main className="flex-1 min-w-0">
           {children}
         </main>
       </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist, Poppins, Lato, Nunito } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import Script from "next/script";
@@ -92,18 +93,25 @@ export default async function RootLayout({
       </head>
       <body className={`${inter.variable} ${poppins.variable} ${lato.variable} ${nunito.variable} bg-background text-foreground`}>
         <SessionProvider>
-          <OrganizationSchema 
-            storeName={settings?.storeName}
-            storeTagline={settings?.storeTagline || undefined}
-            storeLogoUrl={settings?.logoUrl}
-            whatsappNumber={settings?.whatsappNumber}
-            facebookUrl={socialLinks.facebook}
-            instagramUrl={socialLinks.instagram}
-            twitterUrl={socialLinks.twitter}
-          />
-          {children}
-          <Toaster position="bottom-right" />
-          <PwaInstallPrompt />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <OrganizationSchema 
+              storeName={settings?.storeName}
+              storeTagline={settings?.storeTagline || undefined}
+              storeLogoUrl={settings?.logoUrl}
+              whatsappNumber={settings?.whatsappNumber}
+              facebookUrl={socialLinks.facebook}
+              instagramUrl={socialLinks.instagram}
+              twitterUrl={socialLinks.twitter}
+            />
+            {children}
+            <Toaster position="bottom-right" />
+            <PwaInstallPrompt />
+          </ThemeProvider>
         </SessionProvider>
         <Analytics />
       </body>

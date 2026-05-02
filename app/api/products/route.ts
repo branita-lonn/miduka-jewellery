@@ -104,7 +104,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
             const expansionJson = await generateText(expansionPrompt, 200);
             
             // Clean up possible markdown wrappers if AI didn't follow "ONLY JSON" instruction
-            const cleanJson = expansionJson.replace(/```json|```/g, "").trim();
+            let cleanJson = expansionJson.replace(/```json|```/g, "").trim();
+            const startIdx = cleanJson.indexOf('[');
+            const endIdx = cleanJson.lastIndexOf(']');
+            if (startIdx !== -1 && endIdx !== -1 && startIdx <= endIdx) {
+                cleanJson = cleanJson.substring(startIdx, endIdx + 1);
+            }
             const expandedTerms: string[] = JSON.parse(cleanJson);
             
             if (Array.isArray(expandedTerms) && expandedTerms.length > 0) {

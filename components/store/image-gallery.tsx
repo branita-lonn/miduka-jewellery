@@ -38,7 +38,7 @@ export default function ImageGallery({ images, productName, selectedColour }: Im
   return (
     <div className="flex flex-col gap-4">
       {/* Main Image */}
-      <div className="relative aspect-[4/3] md:aspect-auto md:h-[500px] w-full rounded-3xl overflow-hidden bg-muted border border-border">
+      <div className="relative aspect-square md:aspect-[4/5] lg:max-w-[80%] mx-auto w-full rounded-3xl overflow-hidden bg-muted/50 border border-border">
         <Image
           src={images[activeIndex].url}
           alt={images[activeIndex].altText || `${productName} image ${activeIndex + 1}`}
@@ -46,7 +46,7 @@ export default function ImageGallery({ images, productName, selectedColour }: Im
           priority
           loading="eager"
           sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-contain md:object-contain object-cover transition-opacity duration-300"
+          className="object-cover sm:object-contain transition-opacity duration-300"
           {...(images[activeIndex].blurDataUrl ? { placeholder: "blur", blurDataURL: images[activeIndex].blurDataUrl } : {})}
         />
       </div>

@@ -12,6 +12,7 @@ const nextConfig = {
   },
   // Suppress hydration warning from ngrok or other proxies
   allowedDevOrigins: ['flashback-oops-deletion.ngrok-free.dev'],
+  allowedDevOrigins: ['10.29.135.123'],
   turbopack: {},
 };
 
