@@ -23,6 +23,8 @@ export function ChatWidget({ storeName }: { storeName: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [showCallout, setShowCallout] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
@@ -36,12 +38,30 @@ export function ChatWidget({ storeName }: { storeName: string }) {
 
   useEffect(() => {
     if (isOpen) {
-        scrollToBottom();
+      scrollToBottom();
     }
   }, [messages, isOpen]);
 
+  // Show callout bubble after 5 seconds if not previously dismissed
+  useEffect(() => {
+    if (isOpen) return;
+    const calloutDismissed = localStorage.getItem("assistant_callout_dismissed");
+    if (calloutDismissed) return;
+
+    const timer = setTimeout(() => setShowCallout(true), 5000);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
+
+  const dismissCallout = () => {
+    setShowCallout(false);
+    localStorage.setItem("assistant_callout_dismissed", "true");
+  };
+
   const handleOpen = () => {
     setIsOpen(true);
+    setShowCallout(false);
+    setHasInteracted(true);
+    localStorage.setItem("assistant_callout_dismissed", "true");
     if (messages.length === 0) {
       setMessages([
         {
@@ -88,7 +108,7 @@ export function ChatWidget({ storeName }: { storeName: string }) {
 
           const chunk = new TextDecoder().decode(value);
           if (chunk.includes("[ERROR: AI_ALL_PROVIDERS_FAILED]")) {
-              throw new Error("AI_ALL_PROVIDERS_FAILED");
+            throw new Error("AI_ALL_PROVIDERS_FAILED");
           }
           assistantContent += chunk;
 
@@ -124,7 +144,7 @@ export function ChatWidget({ storeName }: { storeName: string }) {
     <div className="fixed bottom-20 right-6 z-50 flex flex-col items-end sm:bottom-6">
       {/* Chat Panel */}
       {isOpen && (
-        <div 
+        <div
           className={cn(
             "mb-4 flex flex-col overflow-hidden border bg-card shadow-2xl transition-all duration-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-10",
             "h-[80vh] w-[90vw] rounded-3xl sm:h-[520px] sm:w-[380px]"
@@ -226,16 +246,40 @@ export function ChatWidget({ storeName }: { storeName: string }) {
         </div>
       )}
 
+      {/* Callout Bubble — appears after 5s, dismissible, persists via localStorage */}
+      {showCallout && !isOpen && (
+        <div className="mb-3 animate-in fade-in zoom-in duration-300">
+          <div className="relative bg-primary text-primary-foreground px-4 py-3 rounded-2xl shadow-xl max-w-[220px] text-sm font-medium">
+            Hi! I'm your shopping assistant. Ask me anything!
+            <button
+              onClick={dismissCallout}
+              className="absolute -top-2 -right-2 bg-muted text-muted-foreground rounded-full p-0.5 shadow-md hover:bg-accent transition-colors"
+            >
+              <X className="h-3 w-3" />
+            </button>
+            {/* Arrow pointing down toward the toggle button */}
+            <div className="absolute -bottom-2 right-6 w-4 h-4 bg-primary rotate-45" />
+          </div>
+        </div>
+      )}
+
       {/* Toggle Button */}
       <Button
         size="icon"
         className={cn(
-          "h-14 w-14 rounded-full shadow-xl transition-all duration-300 hover:scale-105",
+          "relative h-14 w-14 rounded-full shadow-xl transition-all duration-300 hover:scale-105",
           isOpen && "rotate-90 scale-0 opacity-0 pointer-events-none"
         )}
         onClick={handleOpen}
       >
         <MessageCircle className="h-7 w-7" />
+        {/* Ping dot — shown until user has interacted with the widget */}
+        {!hasInteracted && (
+          <span className="absolute top-0 right-0 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-destructive" />
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive" />
+          </span>
+        )}
       </Button>
     </div>
   );

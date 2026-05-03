@@ -38,47 +38,48 @@ export default async function SettingsPage() {
   const serializedSettings = settings ? JSON.parse(JSON.stringify(settings)) : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Settings & Operations</h1>
-        <p className="text-muted-foreground">Manage your store identity, look & feel, and business rules.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings & Operations</h1>
+        <p className="text-muted-foreground text-sm md:text-base">Manage your store identity, look & feel, and business rules.</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-4">
-        <div className="lg:col-span-3 space-y-6">
+      <div className="flex flex-col lg:grid lg:gap-6 lg:grid-cols-4">
+        <div className="lg:col-span-3 space-y-6 min-w-0">
           <Tabs defaultValue="profile" className="w-full">
-            <div className="overflow-x-auto pb-2">
-              <TabsList className="bg-muted/50 rounded-2xl p-1 inline-flex w-auto">
-                <TabsTrigger value="profile" className="rounded-xl px-6 py-2 gap-2">
-                  <Settings className="h-4 w-4" />
+            {/* Scrollable tab bar — hides scrollbar on all browsers */}
+            <div className="w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <TabsList className="bg-muted/50 rounded-2xl p-1 inline-flex w-max min-w-full sm:min-w-0">
+                <TabsTrigger value="profile" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Profile
                 </TabsTrigger>
-                <TabsTrigger value="branding" className="rounded-xl px-6 py-2 gap-2">
-                  <ImageIcon className="h-4 w-4" />
+                <TabsTrigger value="branding" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Branding
                 </TabsTrigger>
-                <TabsTrigger value="theme" className="rounded-xl px-6 py-2 gap-2">
-                  <Palette className="h-4 w-4" />
+                <TabsTrigger value="theme" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <Palette className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Theme
                 </TabsTrigger>
-                <TabsTrigger value="content" className="rounded-xl px-6 py-2 gap-2">
-                  <Layout className="h-4 w-4" />
+                <TabsTrigger value="content" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <Layout className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Content
                 </TabsTrigger>
-                <TabsTrigger value="payments" className="rounded-xl px-6 py-2 gap-2">
-                  <CreditCard className="h-4 w-4" />
+                <TabsTrigger value="payments" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Payments
                 </TabsTrigger>
-                <TabsTrigger value="notifications" className="rounded-xl px-6 py-2 gap-2">
-                  <MessageSquare className="h-4 w-4" />
+                <TabsTrigger value="notifications" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Notifications
                 </TabsTrigger>
-                <TabsTrigger value="hours" className="rounded-xl px-6 py-2 gap-2">
-                  <Clock className="h-4 w-4" />
+                <TabsTrigger value="hours" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Hours
                 </TabsTrigger>
-                <TabsTrigger value="social" className="rounded-xl px-6 py-2 gap-2">
-                  <Share2 className="h-4 w-4" />
+                <TabsTrigger value="social" className="rounded-xl px-3 sm:px-6 py-2 gap-1.5 text-xs sm:text-sm whitespace-nowrap">
+                  <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   Social
                 </TabsTrigger>
               </TabsList>
@@ -116,10 +117,6 @@ export default async function SettingsPage() {
               <SocialLinksForm initialData={serializedSettings} />
             </TabsContent>
           </Tabs>
-        </div>
-
-        <div className="space-y-6 lg:col-span-1">
-           <NotificationCenter />
         </div>
       </div>
     </div>

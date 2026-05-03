@@ -231,7 +231,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <li className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                   <span>Fast Shipping across Kenya</span>
-                </li>
+                </li>ProductDetailPage
                 <li className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                   <span>Secure Payments</span>

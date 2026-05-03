@@ -58,7 +58,7 @@ export default function ProductCard({
   return (
     <Link
       href={`/products/${slug}`}
-      className="group relative flex flex-col rounded-4xl bg-card p-3 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border/40 hover:border-primary/20"
+      className="group relative flex flex-col rounded-4xl bg-card p-1 pb-3 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-border/40 hover:border-primary/20"
     >
       {/* Image */}
       <div className="relative rounded-3xl aspect-[4/3] overflow-hidden bg-muted mb-3 flex-shrink-0">
@@ -81,7 +81,7 @@ export default function ProductCard({
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {activeFlashSale ? (
-            <Badge variant="destructive" className="bg-destructive text-destructive-foreground rounded-full text-[10px] font-bold px-2 py-0.5 border-none shadow-sm">
+            <Badge variant="destructive" className="rounded-full text-[10px] font-bold px-2 py-0.5 border-none shadow-sm">
               FLASH SALE
             </Badge>
           ) : isOnSale && discount !== null && (
@@ -101,7 +101,7 @@ export default function ProductCard({
             "absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 border border-border/50",
             wishlisted 
               ? "bg-red-50 text-red-500 opacity-100 dark:bg-red-900/40 dark:text-red-400 border-red-200 dark:border-red-800" 
-              : "bg-background/80 text-muted-foreground opacity-0 group-hover:opacity-100"
+              : "bg-background/80 text-muted-foreground opacity-100 md:opacity-0 md:group-hover:opacity-100"
           )}
           onClick={(e) => {
             e.preventDefault();

@@ -3,16 +3,13 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
 import { 
   Bell, 
   Check, 
-  Trash2, 
   Package, 
   AlertTriangle, 
   ExternalLink,
   Loader2,
-  Circle
 } from "lucide-react";
 import { 
   Card, 
@@ -28,71 +25,28 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-interface DashboardNotification {
-  id: string;
-  type: string;
-  message: string;
-  link: string | null;
-  isRead: boolean;
-  createdAt: string;
-}
+import { useNotifications } from "@/hooks/use-notifications";
 
 export function NotificationCenter() {
-  const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { notifications, loading, unreadCount, markRead } = useNotifications();
 
-  const fetchNotifications = async () => {
+  const handleMarkRead = async (id: string | null = null) => {
     try {
-      const response = await fetch("/api/dashboard/notifications");
-      if (!response.ok) throw new Error("Failed to fetch");
-      const data = await response.json();
-      setNotifications(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
-    // Poll every 2 minutes
-    const interval = setInterval(fetchNotifications, 120000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const markRead = async (id: string | null = null) => {
-    try {
-      const response = await fetch("/api/dashboard/notifications", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(id ? { id } : { all: true }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update");
-
-      if (id) {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-      } else {
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-        toast.success("All notifications marked as read.");
-      }
-    } catch (err) {
+      await markRead(id);
+      if (!id) toast.success("All notifications marked as read.");
+    } catch {
       toast.error("Failed to update notifications.");
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
   return (
-    <Card className="rounded-3xl border-border/50 bg-card/50 shadow-sm overflow-hidden h-full flex flex-col">
+    <Card className=" border-border/50 bg-card/50 shadow-sm overflow-hidden h-full flex flex-col">
       <CardHeader className="bg-muted/30 flex flex-row items-center justify-between py-4">
         <div className="flex items-center gap-2">
           <div className="relative">
             <Bell className="h-5 w-5 text-primary" />
             {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-2 w-2 bg-rose-500 rounded-full border border-background"></span>
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-rose-500 rounded-full border border-background" />
             )}
           </div>
           <div>
@@ -101,10 +55,10 @@ export function NotificationCenter() {
           </div>
         </div>
         {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => markRead()} className="text-[10px] h-7 rounded-full gap-1">
-                <Check className="h-3 w-3" />
-                Mark all read
-            </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleMarkRead()} className="text-[10px] h-7 rounded-full gap-1">
+            <Check className="h-3 w-3" />
+            Mark all read
+          </Button>
         )}
       </CardHeader>
       <CardContent className="p-0 flex-1 overflow-hidden">
@@ -122,8 +76,8 @@ export function NotificationCenter() {
           ) : (
             <div className="divide-y divide-border/30">
               {notifications.map((notif) => (
-                <div 
-                  key={notif.id} 
+                <div
+                  key={notif.id}
                   className={cn(
                     "p-4 flex gap-3 transition-colors group relative",
                     !notif.isRead ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/20"
@@ -137,29 +91,29 @@ export function NotificationCenter() {
                   </div>
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                            {notif.type.replace("_", " ")}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground shrink-0">
-                            {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
-                        </span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        {notif.type.replace("_", " ")}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
+                      </span>
                     </div>
                     <p className={cn("text-xs leading-snug", !notif.isRead ? "font-bold" : "text-muted-foreground")}>
-                        {notif.message}
+                      {notif.message}
                     </p>
                     {notif.link && (
-                        <Link href={notif.link} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline font-medium">
-                            View details
-                            <ExternalLink className="h-2 w-2" />
-                        </Link>
+                      <Link href={notif.link} className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline font-medium">
+                        View details
+                        <ExternalLink className="h-2 w-2" />
+                      </Link>
                     )}
                   </div>
                   {!notif.isRead && (
-                    <button 
-                        onClick={() => markRead(notif.id)}
-                        className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 p-1 hover:bg-background rounded-full transition-opacity"
+                    <button
+                      onClick={() => handleMarkRead(notif.id)}
+                      className="opacity-0 group-hover:opacity-100 absolute top-4 right-4 p-1 hover:bg-background rounded-full transition-opacity"
                     >
-                        <Check className="h-3 w-3 text-emerald-500" />
+                      <Check className="h-3 w-3 text-emerald-500" />
                     </button>
                   )}
                 </div>
@@ -169,7 +123,7 @@ export function NotificationCenter() {
         </ScrollArea>
       </CardContent>
       <CardFooter className="bg-muted/10 py-3 flex justify-center border-t border-border/30">
-         <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">End of alerts</p>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">End of alerts</p>
       </CardFooter>
     </Card>
   );

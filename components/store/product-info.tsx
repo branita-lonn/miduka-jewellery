@@ -137,7 +137,7 @@ export default function ProductInfo({
       {/* Price */}
       <div className="flex flex-col gap-4">
         <div className="flex items-baseline gap-3">
-          <span className="text-2xl font-bold text-primary">
+          <span className="text-2xl font-bold text-foreground">
             {formatCurrency(effectivePrice)}
           </span>
           {showStrikethrough && strikethroughPrice && Number(strikethroughPrice) > Number(effectivePrice) && (
@@ -315,7 +315,7 @@ export default function ProductInfo({
         <Button
           id="add-to-cart-button"
           size="lg"
-          className="flex-1 rounded-2xl gap-2"
+          className="flex-1 rounded-2xl gap-2 py-2 border-foreground/30"
           disabled={isOutOfStock || isAdding || (product.variants.length > 0 && !selectedVariantId)}
           onClick={() => void handleAddToCart()}
         >
@@ -341,7 +341,7 @@ export default function ProductInfo({
           onClick={() => toggleWishlist(product.id)}
         >
           <Heart className={cn("h-5 w-5", wishlisted && "fill-current")} />
-          <span className="hidden sm:inline">{wishlisted ? "Wishlisted" : "Wishlist"}</span>
+          <span className="sm:inline">{wishlisted ? "Wishlisted" : "Wishlist"}</span>
         </Button>
       </div>
 

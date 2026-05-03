@@ -6,13 +6,14 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, Heart, User, LogOut } from "lucide-react";
+import { ShoppingCart, Heart, User, LogOut, LayoutDashboard, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StoreSearchBar from "@/components/store/store-search-bar";
 import { useCart } from "@/components/store/cart-provider";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,9 +78,9 @@ export default function StoreHeader({ storeName, logoUrl, logoBlurDataUrl, user 
           {NAV_LINKS.map((link) => {
             const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
             return (
-              <Link 
-                key={link.href} 
-                href={link.href} 
+              <Link
+                key={link.href}
+                href={link.href}
                 className={`text-sm font-medium transition-colors hover:text-primary ${isActive ? "text-primary font-bold" : "text-muted-foreground"}`}
               >
                 {link.label}
@@ -109,15 +110,28 @@ export default function StoreHeader({ storeName, logoUrl, logoBlurDataUrl, user 
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>{user.name || user.email || "My Account"}</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    <div className={cn("bg-muted/30 flex items-center justify-start gap-3")}>
+                      <div className="w-8 h-8 lg:w-10 lg:h-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                        {user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "My Account"}
+                      </div>
+                      <div className={cn("flex flex-col min-w-0")}>
+                        <p className="font-semibold truncate text-sm">
+                          {user.name || "user"}
+                        </p>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 {user.role === "STORE_OWNER" && (
-                  <DropdownMenuItem render={<Link href="/admin" />}>
+                  <DropdownMenuItem render={<Link href="/dashboard" />}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
                     Seller Dashboard
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem render={<Link href="/account" />}>
+                  <Settings className="mr-2 h-4 w-4" />
                   Account Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -161,6 +175,6 @@ export default function StoreHeader({ storeName, logoUrl, logoBlurDataUrl, user 
           </Button>
         </div>
       </div>
-    </header>
+    </header >
   );
 }
