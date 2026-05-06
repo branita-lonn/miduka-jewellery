@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Tags, ShoppingCart, Users, BarChart, Settings, MessageSquare, Zap, Gift, Boxes, Truck, LayoutTemplate } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, Users, BarChart, Settings, MessageSquare, Zap, Gift, Boxes, Truck, LayoutTemplate, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/products", label: "Products", icon: Package },
   { href: "/dashboard/categories", label: "Categories", icon: Tags },
+  { href: "/dashboard/coupons", label: "Coupons", icon: Ticket },
   { href: "/dashboard/inventory", label: "Inventory", icon: Package },
   { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
   { href: "/dashboard/customers", label: "Customers", icon: Users },

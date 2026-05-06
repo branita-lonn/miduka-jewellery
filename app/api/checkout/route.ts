@@ -241,6 +241,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         data: { convertedAt: new Date() }
       });
 
+      // h. Create Dashboard Notification for Seller
+      await tx.dashboardNotification.create({
+        data: {
+          type: "NEW_ORDER",
+          message: `New Order: ${newOrder.orderNumber} for KES ${totalAmount}`,
+          link: `/dashboard/orders/${newOrder.id}`,
+        },
+      });
+
       return newOrder;
     });
 

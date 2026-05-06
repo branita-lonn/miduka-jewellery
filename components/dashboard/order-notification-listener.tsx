@@ -8,8 +8,6 @@ import { useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { ShoppingBag } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
@@ -38,8 +36,13 @@ export function OrderNotificationListener() {
         customerName: string; 
       }) => {
         // 1. Play "cha-ching" sound
+        console.log("Attempting to play notification sound...");
         const audio = new Audio("/sounds/order.mp3");
-        audio.play().catch(e => console.warn("Audio play failed (user interaction required):", e));
+        audio.play()
+          .then(() => console.log("Notification sound played successfully"))
+          .catch(e => {
+            console.warn("Audio play failed. Ensure /public/sounds/order.mp3 exists and browser allows autoplay.", e);
+          });
 
         // 2. Show Sonner toast
         toast.info("New Order! 🛍️", {
