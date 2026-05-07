@@ -6,6 +6,7 @@ import { OrderConfirmationEmail } from "@/emails/OrderConfirmation";
 import { OrderStatusUpdateEmail } from "@/emails/order-status-update";
 import { AbandonedCartEmail } from "@/emails/abandoned-cart";
 import React from "react";
+import { render } from "@react-email/components";
 import { OrderStatus } from "@prisma/client";
 
 export const resend = new Resend(process.env.RESEND_API_KEY);
@@ -30,17 +31,21 @@ export async function sendOrderConfirmation({
   try {
     const statusUrl = `${process.env.NEXTAUTH_URL}/checkout/success/${orderId}`;
     
-    await resend.emails.send({
-      from: "MiDuka <orders@miduka.com>", // You must verify this domain in Resend
-      to: email,
-      subject: `Order Confirmed: ${orderNumber}`,
-      react: React.createElement(OrderConfirmationEmail, {
+    const html = await render(
+      React.createElement(OrderConfirmationEmail, {
         orderNumber,
         customerName,
         totalAmount,
         shippingAddress,
         statusUrl,
-      }),
+      })
+    );
+    
+    await resend.emails.send({
+      from: "MiDuka <orders@miduka.com>", // You must verify this domain in Resend
+      to: email,
+      subject: `Order Confirmed: ${orderNumber}`,
+      html,
     });
   } catch (error) {
     console.error("Failed to send order confirmation email:", error);
@@ -66,16 +71,20 @@ export async function sendOrderStatusUpdate({
   try {
     const statusUrl = `${process.env.NEXTAUTH_URL}/account/orders/${orderId}`;
     
-    await resend.emails.send({
-      from: "MiDuka <orders@miduka.com>",
-      to: email,
-      subject: `Order Update: ${orderNumber} is now ${status.replace("_", " ")}`,
-      react: React.createElement(OrderStatusUpdateEmail, {
+    const html = await render(
+      React.createElement(OrderStatusUpdateEmail, {
         orderNumber,
         customerName,
         status,
         statusUrl,
-      }),
+      })
+    );
+    
+    await resend.emails.send({
+      from: "MiDuka <orders@miduka.com>",
+      to: email,
+      subject: `Order Update: ${orderNumber} is now ${status.replace("_", " ")}`,
+      html,
     });
   } catch (error) {
     console.error("Failed to send order status update email:", error);
@@ -96,15 +105,19 @@ export async function sendAbandonedCart({
   items,
 }: SendAbandonedCartParams) {
   try {
+    const html = await render(
+      React.createElement(AbandonedCartEmail, {
+        customerName,
+        recoveryUrl,
+        items,
+      })
+    );
+
     await resend.emails.send({
       from: "MiDuka <orders@miduka.com>",
       to: email,
       subject: "Did you forget something?",
-      react: React.createElement(AbandonedCartEmail, {
-        customerName,
-        recoveryUrl,
-        items,
-      }),
+      html,
     });
   } catch (error) {
     console.error("Failed to send abandoned cart email:", error);

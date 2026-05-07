@@ -143,6 +143,9 @@ model StoreSettings {
   fontChoice      FontChoice @default(INTER)
   socialLinks     Json?
   returnPolicy    String?    @db.Text
+  aboutPage       String?    @db.Text
+  privacyPolicy   String?    @db.Text
+  contactPage     String?    @db.Text
   whatsappNumber  String?
   contactEmail    String?
   contactPhone    String?

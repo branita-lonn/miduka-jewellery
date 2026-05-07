@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { resend } from "@/lib/mail";
 import { GiftCardEmail } from "@/emails/gift-card";
 import React from "react";
+import { render } from "@react-email/components";
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,18 +45,22 @@ export async function POST(req: NextRequest) {
     const targetEmail = recipientEmail || session?.user?.email;
 
     if (targetEmail) {
-      await resend.emails.send({
-        from: `MiDuka <onboarding@resend.dev>`, // Replace with verified domain in production
-        to: targetEmail,
-        subject: `Your ${storeName} Gift Card has arrived!`,
-        react: React.createElement(GiftCardEmail, {
+      const html = await render(
+        React.createElement(GiftCardEmail, {
           recipientName: recipientName || "Valued Customer",
           senderName: senderName || "Someone Special",
           code,
           value: amount,
           expiresAt: expiresAt.toISOString(),
           storeName,
-        }),
+        })
+      );
+
+      await resend.emails.send({
+        from: `MiDuka <onboarding@resend.dev>`, // Replace with verified domain in production
+        to: targetEmail,
+        subject: `Your ${storeName} Gift Card has arrived!`,
+        html,
       });
     }
 

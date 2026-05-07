@@ -30,6 +30,9 @@ const storeProfileSchema = z.object({
   contactPhone: z.string().optional(),
   whatsappNumber: z.string().optional(),
   returnPolicy: z.string().optional(),
+  aboutPage: z.string().optional(),
+  privacyPolicy: z.string().optional(),
+  contactPage: z.string().optional(),
 });
 
 type StoreProfileValues = z.infer<typeof storeProfileSchema>;
@@ -50,6 +53,9 @@ export function StoreProfileForm({ initialData }: StoreProfileFormProps) {
       contactPhone: initialData?.contactPhone || "",
       whatsappNumber: initialData?.whatsappNumber || "",
       returnPolicy: initialData?.returnPolicy || "",
+      aboutPage: initialData?.aboutPage || "",
+      privacyPolicy: initialData?.privacyPolicy || "",
+      contactPage: initialData?.contactPage || "",
     },
   });
 
@@ -81,7 +87,7 @@ export function StoreProfileForm({ initialData }: StoreProfileFormProps) {
       </CardHeader>
       <CardContent className="p-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
@@ -156,25 +162,92 @@ export function StoreProfileForm({ initialData }: StoreProfileFormProps) {
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="returnPolicy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Return Policy</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      rows={5} 
-                      placeholder="Describe your store's return and refund policy..."
-                      className="rounded-2xl border-border/50 bg-background/50 resize-none" 
-                    />
-                  </FormControl>
-                  <FormDescription>This will be displayed on product pages.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-6 pt-6 border-t border-border/50">
+              <h3 className="text-lg font-semibold">Store Policies & Pages</h3>
+              <p className="text-sm text-muted-foreground">
+                Manage the content of your public store pages. You can use Markdown formatting.
+              </p>
+
+              <FormField
+                control={form.control}
+                name="aboutPage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>About Us Page</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={5} 
+                        placeholder="Tell your customers about your store's history and mission..."
+                        className="rounded-2xl border-border/50 bg-background/50 resize-none" 
+                      />
+                    </FormControl>
+                    <FormDescription>Displayed on the About page.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="contactPage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contact Us Page</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={5} 
+                        placeholder="Add some introductory text or directions for your contact page..."
+                        className="rounded-2xl border-border/50 bg-background/50 resize-none" 
+                      />
+                    </FormControl>
+                    <FormDescription>Displayed on the Contact page.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="privacyPolicy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Privacy Policy</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={5} 
+                        placeholder="Detail how you handle customer data and privacy..."
+                        className="rounded-2xl border-border/50 bg-background/50 resize-none" 
+                      />
+                    </FormControl>
+                    <FormDescription>Displayed on the Privacy Policy page.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="returnPolicy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Return Policy</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={5} 
+                        placeholder="Describe your store's return and refund policy..."
+                        className="rounded-2xl border-border/50 bg-background/50 resize-none" 
+                      />
+                    </FormControl>
+                    <FormDescription>Displayed on product pages and the Returns Policy page.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="flex justify-end pt-4">
               <Button type="submit" disabled={loading} className="rounded-full px-8 h-11 gap-2 shadow-lg shadow-primary/20">

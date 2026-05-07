@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import React from "react";
 import BackInStockEmail from "@/emails/back-in-stock";
 import { formatCurrency } from "@/lib/utils";
+import { render } from "@react-email/components";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -37,19 +38,23 @@ export async function sendBackInStockNotifications(productId: string, variantId?
 
     // 2. Send emails in batches (Resend supports multiple recipients or individual calls)
     // For free tier and simplicity, we'll do individual calls but we could optimize
-    const emailPromises = alerts.map((alert) => 
-      resend.emails.send({
-        from: "MiDuka <updates@miduka.com>", // Ensure domain is verified
-        to: alert.email,
-        subject: `Good news! ${product.name} is back in stock`,
-        react: React.createElement(BackInStockEmail, {
+    const emailPromises = alerts.map(async (alert) => {
+      const html = await render(
+        React.createElement(BackInStockEmail, {
           productName: product.name,
           productImage,
           productPrice,
           productUrl,
-        }),
-      })
-    );
+        })
+      );
+
+      return resend.emails.send({
+        from: "MiDuka <updates@miduka.com>", // Ensure domain is verified
+        to: alert.email,
+        subject: `Good news! ${product.name} is back in stock`,
+        html,
+      });
+    });
 
     await Promise.allSettled(emailPromises);
 

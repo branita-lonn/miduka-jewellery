@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { prisma } from "@/lib/prisma";
@@ -7,28 +6,18 @@ import { prisma } from "@/lib/prisma";
 export const revalidate = 3600; // ISR: 1 hour
 
 export async function generateMetadata(): Promise<Metadata> {
-  const page = await prisma.staticPage.findUnique({
-    where: { slug: "privacy" },
-  });
-
-  if (!page) {
-    return { title: "About Us" };
-  }
+  const settings = await prisma.storeSettings.findFirst();
+  const content = settings?.privacyPolicy || "";
 
   return {
-    title: page.title,
-    description: page.content.substring(0, 155),
+    title: "Privacy Policy",
+    description: content ? content.substring(0, 155) : "Privacy Policy",
   };
 }
 
 export default async function PrivacyPage() {
-  const page = await prisma.staticPage.findUnique({
-    where: { slug: "privacy" },
-  });
-
-  if (!page) {
-    notFound();
-  }
+  const settings = await prisma.storeSettings.findFirst();
+  const content = settings?.privacyPolicy;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
@@ -41,12 +30,16 @@ export default async function PrivacyPage() {
             <span aria-hidden="true">→</span>
           </li>
           <li aria-current="page" className="text-foreground font-medium">
-            {page.title}
+            Privacy Policy
           </li>
         </ol>
       </nav>
       <div className="prose dark:prose-invert max-w-none">
-        <ReactMarkdown>{page.content}</ReactMarkdown>
+        {content ? (
+          <ReactMarkdown>{content}</ReactMarkdown>
+        ) : (
+          <p>Policy not yet defined.</p>
+        )}
       </div>
     </div>
   );
