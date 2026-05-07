@@ -10,6 +10,7 @@ import { initiateStkPush, formatPhoneNumber } from "@/lib/mpesa";
 import { z } from "zod";
 import { OrderStatus, PaymentStatus, PaymentMethod } from "@prisma/client";
 import { emitNewOrder } from "@/lib/socket";
+import { sendOrderConfirmation } from "@/lib/mail";
 
 const SESSION_COOKIE = "miduka_session_id";
 
@@ -164,9 +165,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           shippingCost,
           discountAmount: discount,
           total: totalAmount,
-          status: OrderStatus.PLACED,
+          status: totalAmount === 0 ? OrderStatus.CONFIRMED : OrderStatus.PLACED,
           paymentMethod: paymentMethod as PaymentMethod,
-          paymentStatus: PaymentStatus.PENDING,
+          paymentStatus: totalAmount === 0 ? PaymentStatus.PAID : PaymentStatus.PENDING,
           couponId: validCouponId,
           couponCode: validCouponId ? couponCode : null,
           giftCardCode: (validGiftCardId && giftCardCode) ? giftCardCode.toUpperCase() : null,
@@ -279,7 +280,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // 5. Trigger Payment Integrations
-    if (paymentMethod === "MPESA") {
+    if (totalAmount === 0) {
+      // Order is fully paid by gift card or coupon
+      // Skip payment integrations and immediately send order confirmation email
+      await sendOrderConfirmation({
+        email: email,
+        orderNumber: order.orderNumber,
+        customerName: fullName,
+        totalAmount: Number(order.total),
+        shippingAddress: `${addressLine1}, ${city}`,
+        orderId: order.id,
+      });
+    } else if (paymentMethod === "MPESA") {
       try {
         const formattedPhone = formatPhoneNumber(phone);
         // Only trigger STK push if env vars are present (avoid crashing in dev without credentials)

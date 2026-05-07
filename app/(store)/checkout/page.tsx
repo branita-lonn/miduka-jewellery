@@ -90,10 +90,10 @@ export default function CheckoutPage() {
 
   // Redirect if cart is empty once loaded
   useEffect(() => {
-    if (!cartLoading && items.length === 0) {
+    if (!cartLoading && items.length === 0 && !isSubmitting) {
       router.replace("/cart");
     }
-  }, [cartLoading, items.length, router]);
+  }, [cartLoading, items.length, router, isSubmitting]);
 
   const [settings, setSettings] = useState<any>(null);
 

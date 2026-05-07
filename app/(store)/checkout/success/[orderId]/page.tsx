@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import { sendWhatsAppOrderConfirmation } from "@/lib/whatsapp";
 import { Metadata } from "next";
+import { PaymentStatusPoller } from "@/components/store/payment-status-poller";
 
 export const metadata: Metadata = {
   title: "Order Confirmed | MiDuka",
@@ -217,6 +218,7 @@ export default async function CheckoutSuccessPage({
           </p>
         </div>
       )}
+      <PaymentStatusPoller orderId={order.id} initialStatus={order.paymentStatus} />
     </div>
   );
 }

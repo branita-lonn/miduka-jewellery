@@ -5,19 +5,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import crypto from "crypto";
-import { resend } from "@/lib/mail";
-import { GiftCardEmail } from "@/emails/gift-card";
-import React from "react";
-import { render } from "@react-email/components";
+import { initiateStkPush, formatPhoneNumber } from "@/lib/mpesa";
+import { PaymentStatus, PaymentMethod } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     const body = await req.json();
-    const { amount, recipientEmail, recipientName, senderName } = body;
+    const { amount, recipientEmail, recipientName, senderName, paymentMethod, senderPhone } = body;
 
     if (!amount || amount <= 0) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+    }
+
+    if (paymentMethod === "MPESA" && !senderPhone) {
+      return NextResponse.json({ error: "Phone number is required for M-Pesa" }, { status: 400 });
     }
 
     // 1. Generate unique 16-character code
@@ -27,7 +29,7 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-    // 3. Create GiftCard record
+    // 3. Create GiftCard record with PENDING status
     const giftCard = await prisma.giftCard.create({
       data: {
         code,
@@ -35,38 +37,46 @@ export async function POST(req: NextRequest) {
         remainingValue: amount,
         expiresAt,
         purchasedByCustomerId: session?.user?.id,
-        isActive: true,
+        recipientEmail,
+        recipientName,
+        senderName,
+        isActive: false, // Inactive until paid
+        paymentStatus: PaymentStatus.PENDING,
+        paymentMethod: paymentMethod as PaymentMethod,
       }
     });
 
-    // 4. Send Email
-    const storeSettings = await prisma.storeSettings.findFirst();
-    const storeName = storeSettings?.storeName || "MiDuka";
-    const targetEmail = recipientEmail || session?.user?.email;
+    // We no longer send the email here. We trigger payment, and email is sent in the webhook.
 
-    if (targetEmail) {
-      const html = await render(
-        React.createElement(GiftCardEmail, {
-          recipientName: recipientName || "Valued Customer",
-          senderName: senderName || "Someone Special",
-          code,
-          value: amount,
-          expiresAt: expiresAt.toISOString(),
-          storeName,
-        })
-      );
+    if (paymentMethod === "MPESA") {
+      try {
+        const formattedPhone = formatPhoneNumber(senderPhone);
+        if (process.env.MPESA_CONSUMER_KEY) {
+          const stkResponse = await initiateStkPush({
+            phoneNumber: formattedPhone,
+            amount: Number(amount),
+            accountReference: giftCard.id,
+            transactionDesc: `Gift Card Purchase`,
+          });
 
-      await resend.emails.send({
-        from: `MiDuka <onboarding@resend.dev>`, // Replace with verified domain in production
-        to: targetEmail,
-        subject: `Your ${storeName} Gift Card has arrived!`,
-        html,
-      });
+          // Save the request ID to the gift card so we can match it in the webhook
+          await prisma.giftCard.update({
+            where: { id: giftCard.id },
+            data: { mpesaCheckoutRequestId: stkResponse.CheckoutRequestID }
+          });
+        } else {
+          console.warn("M-Pesa credentials missing, skipping STK push for gift card", giftCard.id);
+        }
+      } catch (err) {
+        console.error("STK Push failed for gift card:", err);
+      }
+    } else if (paymentMethod === "STRIPE") {
+      console.log("Stripe selected for gift card", giftCard.id);
     }
 
     return NextResponse.json({ 
       success: true, 
-      code: giftCard.code 
+      id: giftCard.id 
     });
   } catch (error: unknown) {
     console.error("[GIFT_CARD_PURCHASE_ERROR]", error);

@@ -25,6 +25,8 @@ export default function GiftCardsPage() {
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [senderName, setSenderName] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"MPESA" | "STRIPE">("MPESA");
+  const [senderPhone, setSenderPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handlePurchase = async () => {
@@ -47,6 +49,8 @@ export default function GiftCardsPage() {
           recipientEmail,
           recipientName,
           senderName,
+          paymentMethod,
+          senderPhone,
         }),
       });
 
@@ -177,12 +181,59 @@ export default function GiftCardsPage() {
             </div>
           </div>
 
+          <div>
+            <h2 className="text-xl font-bold mb-4">3. Payment</h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div 
+                  className={`relative flex items-center p-4 border rounded-2xl cursor-pointer transition-colors ${paymentMethod === "MPESA" ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10" : "border-border hover:border-emerald-500/50"}`}
+                  onClick={() => setPaymentMethod("MPESA")}
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">M-PESA STK Push</span>
+                  </div>
+                  <div className={`ml-auto h-4 w-4 rounded-full border border-emerald-500 flex items-center justify-center ${paymentMethod === "MPESA" ? "bg-emerald-500" : ""}`}>
+                    {paymentMethod === "MPESA" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                  </div>
+                </div>
+
+                <div 
+                  className={`relative flex items-center p-4 border rounded-2xl cursor-pointer transition-colors ${paymentMethod === "STRIPE" ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-500/10" : "border-border hover:border-indigo-500/50"}`}
+                  onClick={() => setPaymentMethod("STRIPE")}
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">Card Payment</span>
+                  </div>
+                  <div className={`ml-auto h-4 w-4 rounded-full border border-indigo-500 flex items-center justify-center ${paymentMethod === "STRIPE" ? "bg-indigo-500" : ""}`}>
+                    {paymentMethod === "STRIPE" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                  </div>
+                </div>
+              </div>
+
+              {paymentMethod === "MPESA" && (
+                <div className="space-y-2 mt-4 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900">
+                  <Label htmlFor="senderPhone" className="text-emerald-800 dark:text-emerald-300">M-Pesa Phone Number</Label>
+                  <Input
+                    id="senderPhone"
+                    placeholder="e.g. 0712345678"
+                    value={senderPhone}
+                    onChange={(e) => setSenderPhone(e.target.value)}
+                    className="rounded-xl h-12 bg-background"
+                  />
+                  <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80">
+                    We will send an STK Push to this number.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="pt-4">
             <Button
               size="lg"
               className="w-full rounded-full h-14 text-lg font-bold shadow-xl shadow-indigo-600/20 gap-2"
               onClick={handlePurchase}
-              disabled={loading || !selectedValue}
+              disabled={loading || !selectedValue || (paymentMethod === "MPESA" && !senderPhone)}
             >
               {loading ? (
                 <>

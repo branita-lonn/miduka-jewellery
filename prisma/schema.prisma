@@ -601,12 +601,19 @@ model GiftCard {
   expiresAt             DateTime?
   purchasedByCustomerId String?
   redeemedByCustomerId  String?
+  recipientEmail        String?
+  recipientName         String?
+  senderName            String?
   orderId               String?
   isActive              Boolean   @default(true)
+  paymentStatus         PaymentStatus @default(PENDING)
+  paymentMethod         PaymentMethod?
+  mpesaCheckoutRequestId String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
   @@index([code])
+  @@index([mpesaCheckoutRequestId])
 }
 
 // ─── STATIC PAGES ─────────────────────────────────────────────────────────────

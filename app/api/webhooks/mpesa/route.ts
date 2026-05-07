@@ -1,33 +1,14 @@
-// app/api/webhooks/mpesa/route.ts
-// Webhook listener for Safaricom STK Push callbacks
-
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PaymentStatus, OrderStatus } from "@prisma/client";
-import { sendOrderConfirmation } from "@/lib/mail";
+import { sendOrderConfirmation, resend } from "@/lib/mail";
+import { render } from "@react-email/components";
+import React from "react";
+import { GiftCardEmail } from "@/emails/gift-card";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
-
-    // The STK Push callback body structure:
-    // {
-    //   "Body": {
-    //     "stkCallback": {
-    //       "MerchantRequestID": "29115-34620561-1",
-    //       "CheckoutRequestID": "ws_CO_191220191020363925",
-    //       "ResultCode": 0,
-    //       "ResultDesc": "The service request is processed successfully.",
-    //       "CallbackMetadata": {
-    //         "Item": [
-    //           { "Name": "Amount", "Value": 1.00 },
-    //           { "Name": "MpesaReceiptNumber", "Value": "NLJ7RT61SV" },
-    //           { "Name": "PhoneNumber", "Value": 254708374149 }
-    //         ]
-    //       }
-    //     }
-    //   }
-    // }
 
     const stkCallback = body?.Body?.stkCallback;
     if (!stkCallback) {
@@ -36,56 +17,100 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { CheckoutRequestID, ResultCode, ResultDesc } = stkCallback;
 
-    // Find the order that initiated this request
+    // First try to find an Order
     const order = await prisma.order.findFirst({
       where: { mpesaCheckoutRequestId: CheckoutRequestID },
     });
 
-    if (!order) {
-      console.warn("Received STK callback for unknown CheckoutRequestID:", CheckoutRequestID);
-      return NextResponse.json({ success: true }); // Acknowledge to Safaricom anyway
+    if (order) {
+      if (ResultCode === 0) {
+        const metadataItems = stkCallback.CallbackMetadata?.Item || [];
+        const receiptItem = metadataItems.find((i: any) => i.Name === "MpesaReceiptNumber");
+        const mpesaReceipt = receiptItem?.Value?.toString();
+
+        const updatedOrder = await prisma.order.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: PaymentStatus.PAID,
+            status: OrderStatus.CONFIRMED,
+            mpesaReceiptNumber: mpesaReceipt,
+          },
+          include: { shippingAddress: true, customer: true }
+        });
+
+        await sendOrderConfirmation({
+          email: updatedOrder.customer?.email ?? updatedOrder.guestEmail ?? "",
+          orderNumber: updatedOrder.orderNumber,
+          customerName: updatedOrder.customer?.name ?? updatedOrder.guestName ?? "Customer",
+          totalAmount: Number(updatedOrder.total),
+          shippingAddress: `${updatedOrder.shippingAddress.addressLine1}, ${updatedOrder.shippingAddress.city}`,
+          orderId: updatedOrder.id,
+        });
+      } else {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { paymentStatus: PaymentStatus.FAILED },
+        });
+        console.log(`Order ${order.id} payment failed: ${ResultDesc}`);
+      }
+      return NextResponse.json({ success: true });
     }
 
-    // Determine status based on ResultCode (0 is success)
-    if (ResultCode === 0) {
-      // Extract receipt number
-      const metadataItems = stkCallback.CallbackMetadata?.Item || [];
-      const receiptItem = metadataItems.find((i: any) => i.Name === "MpesaReceiptNumber");
-      const mpesaReceipt = receiptItem?.Value?.toString();
+    // If no order, try to find a GiftCard
+    const giftCard = await prisma.giftCard.findFirst({
+      where: { mpesaCheckoutRequestId: CheckoutRequestID },
+    });
 
-      const updatedOrder = await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          paymentStatus: PaymentStatus.PAID,
-          status: OrderStatus.CONFIRMED,
-          mpesaReceiptNumber: mpesaReceipt,
-        },
-        include: { shippingAddress: true, customer: true }
-      });
+    if (giftCard) {
+      if (ResultCode === 0) {
+        const updatedGiftCard = await prisma.giftCard.update({
+          where: { id: giftCard.id },
+          data: {
+            paymentStatus: PaymentStatus.PAID,
+            isActive: true,
+          },
+        });
 
-      // Trigger email confirmation
-      await sendOrderConfirmation({
-        email: updatedOrder.customer?.email ?? updatedOrder.guestEmail ?? "",
-        orderNumber: updatedOrder.orderNumber,
-        customerName: updatedOrder.customer?.name ?? updatedOrder.guestName ?? "Customer",
-        totalAmount: Number(updatedOrder.total),
-        shippingAddress: `${updatedOrder.shippingAddress.addressLine1}, ${updatedOrder.shippingAddress.city}`,
-        orderId: updatedOrder.id,
-      });
-    } else {
-      // Payment failed or was cancelled by user
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          paymentStatus: PaymentStatus.FAILED,
-          // We can add a note/reason using the ResultDesc if we had a field for it,
-          // for now we just mark it failed.
-        },
-      });
-      console.log(`Order ${order.id} payment failed: ${ResultDesc}`);
+        const storeSettings = await prisma.storeSettings.findFirst();
+        const storeName = storeSettings?.storeName || "MiDuka";
+
+        // Find customer email if recipientEmail is not set, or we can use the customer's email if they were logged in
+        let targetEmail = giftCard.recipientEmail;
+        if (!targetEmail && giftCard.purchasedByCustomerId) {
+          const customer = await prisma.user.findUnique({ where: { id: giftCard.purchasedByCustomerId } });
+          targetEmail = customer?.email ?? null;
+        }
+
+        if (targetEmail) {
+          const html = await render(
+            React.createElement(GiftCardEmail, {
+              recipientName: giftCard.recipientName || "Valued Customer",
+              senderName: giftCard.senderName || "Someone Special",
+              code: updatedGiftCard.code,
+              value: Number(updatedGiftCard.initialValue),
+              expiresAt: updatedGiftCard.expiresAt?.toISOString() || new Date().toISOString(),
+              storeName,
+            })
+          );
+
+          await resend.emails.send({
+            from: `MiDuka <onboarding@resend.dev>`, // Replace with verified domain in production
+            to: targetEmail,
+            subject: `Your ${storeName} Gift Card has arrived!`,
+            html,
+          });
+        }
+      } else {
+        await prisma.giftCard.update({
+          where: { id: giftCard.id },
+          data: { paymentStatus: PaymentStatus.FAILED },
+        });
+        console.log(`GiftCard ${giftCard.id} payment failed: ${ResultDesc}`);
+      }
+      return NextResponse.json({ success: true });
     }
 
-    // Safaricom requires a success response to stop retrying
+    console.warn("Received STK callback for unknown CheckoutRequestID:", CheckoutRequestID);
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error("[POST /api/webhooks/mpesa]", error);
