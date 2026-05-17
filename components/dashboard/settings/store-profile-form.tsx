@@ -8,6 +8,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { VERTICAL_CONFIG } from "@/lib/store-vertical";
+import { 
   Form, 
   FormControl, 
   FormDescription, 
@@ -33,6 +41,9 @@ const storeProfileSchema = z.object({
   aboutPage: z.string().optional(),
   privacyPolicy: z.string().optional(),
   contactPage: z.string().optional(),
+  storeVertical: z.enum(["FASHION", "ELECTRONICS", "GADGETS", "BEAUTY", "JEWELLERY", "FRESH_PRODUCE", "GENERAL"]),
+  currency: z.string().min(1, "Currency is required").max(5, "Currency code is too long"),
+  currencyLocale: z.string().min(2, "Locale is required").max(10, "Locale is too long"),
 });
 
 type StoreProfileValues = z.infer<typeof storeProfileSchema>;
@@ -56,6 +67,9 @@ export function StoreProfileForm({ initialData }: StoreProfileFormProps) {
       aboutPage: initialData?.aboutPage || "",
       privacyPolicy: initialData?.privacyPolicy || "",
       contactPage: initialData?.contactPage || "",
+      storeVertical: initialData?.storeVertical || "GENERAL",
+      currency: initialData?.currency || "KES",
+      currencyLocale: initialData?.currencyLocale || "en-KE",
     },
   });
 
@@ -156,6 +170,74 @@ export function StoreProfileForm({ initialData }: StoreProfileFormProps) {
                     <FormControl>
                       <Input {...field} placeholder="+254..." className="rounded-2xl border-border/50 bg-background/50 h-11" />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="storeVertical"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Store Vertical</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="rounded-2xl border-border/50 bg-background/50 h-11">
+                          <SelectValue placeholder="Select Store Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(VERTICAL_CONFIG).map(([key, config]) => (
+                            <SelectItem key={key} value={key}>
+                              {config.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormDescription>
+                      Determines variant dimensions and AI guidelines. Seed attributes after switching.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Currency Code (e.g. KES, USD)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="e.g. KES"
+                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        className="rounded-2xl border-border/50 bg-background/50 h-11"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="currencyLocale"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Currency Locale (e.g. en-KE, en-US)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="e.g. en-KE"
+                        className="rounded-2xl border-border/50 bg-background/50 h-11"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Used to format prices correctly for buyers (BCP 47 language tag).
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
