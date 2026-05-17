@@ -13,9 +13,9 @@ import * as z from "zod";
 const settingsSchema = z.object({
   storeName: z.string().min(1).optional(),
   storeTagline: z.string().optional().nullable(),
-  logoUrl: z.preprocess((val) => val === "" ? null : val, z.string().url().optional().nullable()),
+  logoUrl: z.preprocess((val) => val === "" ? null : val, z.string().url().nullable().optional()).optional(),
   logoBlurDataUrl: z.string().optional().nullable(),
-  faviconUrl: z.preprocess((val) => val === "" ? null : val, z.string().url().optional().nullable()),
+  faviconUrl: z.preprocess((val) => val === "" ? null : val, z.string().url().nullable().optional()).optional(),
   accentColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
   fontChoice: z.enum(["INTER", "POPPINS", "LATO", "NUNITO"]).optional(),
   socialLinks: z.any().optional(),
@@ -24,7 +24,7 @@ const settingsSchema = z.object({
   privacyPolicy: z.string().optional().nullable(),
   contactPage: z.string().optional().nullable(),
   whatsappNumber: z.string().optional().nullable(),
-  contactEmail: z.preprocess((val) => val === "" ? null : val, z.string().email().optional().nullable()),
+  contactEmail: z.preprocess((val) => val === "" ? null : val, z.string().email().nullable().optional()).optional(),
   contactPhone: z.string().optional().nullable(),
   enableStripe: z.boolean().optional(),
   enableMpesa: z.boolean().optional(),
@@ -88,7 +88,8 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json(updatedSettings);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+      console.error("Zod Validation Error on settings update:", error.issues);
+      return NextResponse.json({ error: `${error.issues[0].path.join(".")}: ${error.issues[0].message}` }, { status: 400 });
     }
     console.error("[PATCH /api/dashboard/settings]", error);
     return NextResponse.json({ error: "Failed to update settings" }, { status: 500 });

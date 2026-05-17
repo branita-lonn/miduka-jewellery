@@ -82,11 +82,15 @@ export function StoreProfileForm({ initialData }: StoreProfileFormProps) {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Failed to update settings");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to update settings");
+      }
 
       toast.success("Store profile updated successfully.");
-    } catch (error) {
-      toast.error("Something went wrong.");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Something went wrong.";
+      toast.error(msg);
       console.error(error);
     } finally {
       setLoading(false);
