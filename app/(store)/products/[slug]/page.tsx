@@ -12,9 +12,10 @@ import Script from "next/script";
 import { ReviewsSection } from "@/components/store/reviews-section";
 import { ProductSchema } from "@/components/seo/product-schema";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
-import { ProductWithRelationsSerialized } from "@/types";
+import { ProductWithRelationsSerialized, AttributeDefinitionPublic } from "@/types";
 import { auth } from "@/auth";
 import { getBundlesForProduct } from "@/lib/bundles";
+import { serializeProduct } from "@/lib/serialize-product";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -82,14 +83,24 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     include: {
       category: true,
       images: {
+        include: {
+          variantLinks: {
+            include: { variant: true },
+          },
+        },
         orderBy: { sortOrder: "asc" },
       },
       variants: {
         where: { isActive: true },
-        orderBy: [
-          { colour: "asc" },
-          { size: "asc" },
-        ],
+        include: {
+          attributes: {
+            include: { attributeDefinition: true },
+            orderBy: { attributeDefinition: { sortOrder: "asc" } },
+          },
+          imageLinks: {
+            include: { image: true },
+          },
+        },
       },
       flashSale: true,
     },
@@ -100,7 +111,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   }
 
   // Fetch review data for initial display
-  const [avgRating, totalReviews, ratingGroups, bundles] = await Promise.all([
+  const [avgRating, totalReviews, ratingGroups, bundles, allDefinitions] = await Promise.all([
     prisma.review.aggregate({
       where: { productId: product.id },
       _avg: { rating: true },
@@ -114,6 +125,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       _count: { id: true },
     }),
     getBundlesForProduct(product.id),
+    prisma.attributeDefinition.findMany({
+      orderBy: { sortOrder: "asc" },
+      include: { allowedValues: { orderBy: { sortOrder: "asc" } } },
+    }),
   ]);
 
   const ratingBreakdown: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -125,32 +140,27 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   // (In a real app, check if they bought the product)
   const isEligible = !!session?.user;
 
-  // Pre-serialize for client component
-  const serializedProduct: ProductWithRelationsSerialized = {
-    ...product,
-    price: Number(product.price),
-    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
-    createdAt: product.createdAt.toISOString(),
-    updatedAt: product.updatedAt.toISOString(),
-    images: product.images.map((img) => ({
-      ...img,
-      createdAt: img.createdAt.toISOString(),
-    })),
-    variants: product.variants.map((v) => ({
-      ...v,
-      priceOverride: v.priceOverride ? Number(v.priceOverride) : null,
-      createdAt: v.createdAt.toISOString(),
-      updatedAt: v.updatedAt.toISOString(),
-    })),
-    flashSale: product.flashSale ? {
-      ...product.flashSale,
-      salePrice: Number(product.flashSale.salePrice),
-      startTime: product.flashSale.startTime.toISOString(),
-      endTime: product.flashSale.endTime.toISOString(),
-    } : null,
-  };
+  // Derive which attribute keys this specific product uses across all its variants.
+  const usedKeys = new Set(
+    product.variants.flatMap((v) => v.attributes.map((a) => a.attributeDefinition.key))
+  );
+  const relevantDefinitions = allDefinitions.filter((d) => usedKeys.has(d.key));
 
-  const priceNum = Number(product.price);
+  const serializedDefinitions: AttributeDefinitionPublic[] = relevantDefinitions.map((d) => ({
+    id: d.id,
+    key: d.key,
+    label: d.label,
+    unit: d.unit,
+    inputType: d.inputType,
+    sortOrder: d.sortOrder,
+    isFilterable: d.isFilterable,
+    categoryId: d.categoryId,
+    allowedValues: d.allowedValues.map((av) => av.value),
+  }));
+
+  // Pre-serialize for client component
+  const serializedProduct = serializeProduct(product);
+
   const isOutOfStock = product.stockQuantity === 0 && (product.variants.length === 0 || product.variants.reduce((acc, v) => acc + v.stockQuantity, 0) === 0);
 
   // SEO Schemas
@@ -186,7 +196,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           <span className="text-foreground font-medium">{product.name}</span>
         </nav>
 
-        <ProductDetailView product={serializedProduct} bundles={bundles} />
+        <ProductDetailView product={serializedProduct} attributeDefinitions={serializedDefinitions} bundles={bundles} />
 
         {/* Description & Specs Tab Style */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

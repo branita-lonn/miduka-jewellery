@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/components/store/cart-provider";
 import { formatCurrency } from "@/lib/utils";
-import type { ProductWithRelationsSerialized } from "@/types";
+import type { ProductWithRelationsSerialized, AttributeDefinitionPublic } from "@/types";
 import { cn } from "@/lib/utils";
 import StockAlertButton from "@/components/store/stock-alert-button";
 import { useWishlist } from "@/components/store/wishlist-provider";
@@ -18,46 +18,57 @@ import { ProductBundleCallout } from "@/components/store/product-bundle-callout"
 
 interface ProductInfoProps {
   product: ProductWithRelationsSerialized;
-  externalSelectedColour?: string | null;
-  onColourChange?: (colour: string | null) => void;
+  attributeDefinitions: AttributeDefinitionPublic[];
+  onVariantChange?: (
+    variant: ProductWithRelationsSerialized["variants"][number] | null
+  ) => void;
   bundles?: any[];
 }
 
 export default function ProductInfo({ 
   product, 
-  externalSelectedColour, 
-  onColourChange,
+  attributeDefinitions,
+  onVariantChange,
   bundles = []
 }: ProductInfoProps) {
   const { addItem } = useCart();
 
-  const [selectedColour, setSelectedColour] = useState<string | null>(externalSelectedColour ?? null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
-
-  // Sync internal state with external state
-  useEffect(() => {
-    if (externalSelectedColour !== undefined) {
-      setSelectedColour(externalSelectedColour);
-    }
-  }, [externalSelectedColour]);
-
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
 
   const { isWishlisted, toggleWishlist, isLoading: wishlistLoading } = useWishlist();
   const wishlisted = isWishlisted(product.id);
 
-  // Derive selected variant from attributes
-  const selectedVariant = product.variants.find(
-    (v) =>
-      (selectedColour ? v.colour === selectedColour : !v.colour) &&
-      (selectedSize ? v.size === selectedSize : !v.size) &&
-      (selectedMaterial ? v.material === selectedMaterial : !v.material) &&
-      v.isActive
-  );
+  // When no attributes are selected, selectedAttributes is {} and Object.entries()
+  // returns nothing, so every() returns true for all variants — the first active
+  // variant is returned as the default. This is intentional: the PDP shows the
+  // first variant's price and stock on initial load.
+  // If a product has no active variants, selectedVariant is null and the component
+  // falls back to product-level stock and price.
+  const selectedVariant =
+    product.variants.find(
+      (v) =>
+        v.isActive &&
+        attributeDefinitions.every((def) => {
+          const selected = selectedAttributes[def.id];
+          if (selected === undefined) return true; // no selection = any value matches
+          const variantAttr = v.attributes.find(
+            (a) => a.attributeDefinitionId === def.id
+          );
+          return variantAttr?.value === selected;
+        })
+    ) ?? null;
 
-  const selectedVariantId = selectedVariant?.id;
+  // Track fully selected to decide if we can Add to Cart
+  const isFullySelected = attributeDefinitions.every((def) => selectedAttributes[def.id] !== undefined);
+  const selectedVariantId = isFullySelected ? (selectedVariant?.id ?? undefined) : undefined;
+
+  // Sync back variant selection to parent component
+  useEffect(() => {
+    onVariantChange?.(selectedVariant);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVariant?.id]); // compare by ID to avoid infinite loop on object identity
 
   // Flash Sale logic
   const activeFlashSale = product.flashSale && new Date(product.flashSale.startTime) <= new Date() && new Date(product.flashSale.endTime) >= new Date()
@@ -81,23 +92,22 @@ export default function ProductInfo({
   const isOutOfStock = stockQty === 0;
   const isLowStock = !isOutOfStock && stockQty <= 5;
 
-  // Group variant options
-  const colours = [...new Set(product.variants.map((v) => v.colour).filter(Boolean))] as string[];
-  const sizes = [...new Set(product.variants.map((v) => v.size).filter(Boolean))] as string[];
-  const materials = [...new Set(product.variants.map((v) => v.material).filter(Boolean))] as string[];
-
-  function handleOptionSelect(type: 'colour' | 'size' | 'material', value: string) {
-    if (type === 'colour') {
-      setSelectedColour(value);
-      onColourChange?.(value);
-    }
-    if (type === 'size') setSelectedSize(value);
-    if (type === 'material') setSelectedMaterial(value);
+  function handleAttributeSelect(defId: string, value: string): void {
+    setSelectedAttributes((prev) => {
+      // If the value is already selected, deselect it by removing the key entirely.
+      // Never set to "" — see state declaration comment above.
+      if (prev[defId] === value) {
+        const next = { ...prev };
+        delete next[defId];
+        return next;
+      }
+      return { ...prev, [defId]: value };
+    });
     setQuantity(1);
   }
 
   async function handleAddToCart() {
-    if (isOutOfStock) return;
+    if (isOutOfStock || !isFullySelected) return;
     setIsAdding(true);
     try {
       await addItem({
@@ -191,89 +201,166 @@ export default function ProductInfo({
         />
       )}
 
-      {/* Colour selector */}
-      {colours.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">
-            Colour:{" "}
-            <span className="font-normal text-muted-foreground">
-              {selectedColour ?? "Select"}
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {colours.map((colour) => (
-              <button
-                key={colour}
-                onClick={() => handleOptionSelect('colour', colour)}
-                className={cn(
-                  "rounded-full border-2 px-4 py-1.5 text-sm font-medium transition-all",
-                  selectedColour === colour
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:border-primary/50"
-                )}
-              >
-                {colour}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Dynamic Attributes Variant Selector */}
+      {attributeDefinitions.map((def) => {
+        // Collect distinct values for this attribute across all active variants,
+        // preserving the order they appear in allowedValues (if defined) or
+        // by first-seen order across variants.
+        const allowedOrder = def.allowedValues;
+        const seenValues = new Set(
+          product.variants
+            .filter((v) => v.isActive)
+            .flatMap((v) => v.attributes)
+            .filter((a) => a.attributeDefinitionId === def.id)
+            .map((a) => a.value)
+        );
+        // Use allowedValues order where possible; fall back to seen order for free-form types.
+        const distinctValues =
+          allowedOrder.length > 0
+            ? allowedOrder.filter((v) => seenValues.has(v))
+            : [...seenValues];
 
-      {/* Size selector */}
-      {sizes.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">
-            Size:{" "}
-            <span className="font-normal text-muted-foreground">
-              {selectedSize ?? "Select"}
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {sizes.map((size) => (
-              <button
-                key={size}
-                onClick={() => handleOptionSelect('size', size)}
-                className={cn(
-                  "rounded-xl border-2 px-4 py-1.5 text-sm font-medium transition-all",
-                  selectedSize === size
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:border-primary/50"
-                )}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        if (distinctValues.length === 0) return null;
 
-      {/* Material selector */}
-      {materials.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">
-            Material:{" "}
-            <span className="font-normal text-muted-foreground">
-              {selectedMaterial ?? "Select"}
-            </span>
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {materials.map((material) => (
-              <button
-                key={material}
-                onClick={() => handleOptionSelect('material', material)}
-                className={cn(
-                  "rounded-xl border-2 px-4 py-1.5 text-sm font-medium transition-all",
-                  selectedMaterial === material
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border hover:border-primary/50"
-                )}
-              >
-                {material}
-              </button>
-            ))}
+        const selectedValue = selectedAttributes[def.id]; // undefined = nothing selected
+
+        return (
+          <div key={def.id} className="space-y-2">
+            <p className="text-sm font-medium">
+              {def.label}:{" "}
+              <span className="font-normal text-muted-foreground">
+                {selectedValue !== undefined ? selectedValue : "Select"}
+              </span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {distinctValues.map((value) => {
+                const isSelected = selectedValue === value;
+
+                // Availability check: is there any active variant that (a) has this
+                // value for this attribute AND (b) is compatible with every currently
+                // selected value for all OTHER attributes?
+                //
+                // The Object.entries(selectedAttributes) loop only includes attributes
+                // where a selection has been made (no undefined/empty-string keys exist
+                // in the map — the handleAttributeSelect handler guarantees this).
+                const isAvailable = product.variants.some(
+                  (v) =>
+                    v.isActive &&
+                    v.attributes.some(
+                      (a) =>
+                        a.attributeDefinitionId === def.id && a.value === value
+                    ) &&
+                    Object.entries(selectedAttributes).every(([defId, selVal]) => {
+                      if (defId === def.id) return true; // skip current attribute
+                      return v.attributes.some(
+                        (a) =>
+                          a.attributeDefinitionId === defId && a.value === selVal
+                      );
+                    })
+                );
+
+                // COLOR: circular swatch
+                if (def.inputType === "COLOR") {
+                  // When value is an empty string (not yet set by the seller),
+                  // render a grey placeholder — never pass an empty string to
+                  // backgroundColor as it has no visual output.
+                  const hasValue = value.trim() !== "";
+                  return (
+                    <button
+                      key={value}
+                      onClick={() => handleAttributeSelect(def.id, value)}
+                      disabled={!isAvailable}
+                      title={value || "Unset colour"}
+                      aria-label={`Select colour ${value}`}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        "h-8 w-8 rounded-full border-2 transition-all",
+                        isSelected
+                          ? "border-primary ring-2 ring-primary ring-offset-2"
+                          : "border-border",
+                        !isAvailable && "cursor-not-allowed opacity-30",
+                        !hasValue && "bg-muted"
+                      )}
+                      style={hasValue ? { backgroundColor: value } : undefined}
+                    />
+                  );
+                }
+
+                // BOOLEAN: single toggle
+                if (def.inputType === "BOOLEAN") {
+                  const displayLabel =
+                    value === "true" ? `Yes — ${def.label}` : `No — ${def.label}`;
+                  return (
+                    <button
+                      key={value}
+                      onClick={() => handleAttributeSelect(def.id, value)}
+                      disabled={!isAvailable}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        "rounded-xl border-2 px-4 py-1.5 text-sm font-medium transition-all",
+                        isSelected
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/50",
+                        !isAvailable && "cursor-not-allowed opacity-30"
+                      )}
+                    >
+                      {displayLabel}
+                    </button>
+                  );
+                }
+
+                // NUMBER: append unit with correct spacing
+                if (def.inputType === "NUMBER" && def.unit) {
+                  const unit = def.unit;
+                  const alreadyHasUnit = value
+                    .toLowerCase()
+                    .endsWith(unit.toLowerCase());
+                  const separator = unit.length <= 2 ? "" : " ";
+                  const displayValue = alreadyHasUnit
+                    ? value
+                    : `${value}${separator}${unit}`;
+                  return (
+                    <button
+                      key={value}
+                      onClick={() => handleAttributeSelect(def.id, value)}
+                      disabled={!isAvailable}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        "rounded-xl border-2 px-4 py-1.5 text-sm font-medium transition-all",
+                        isSelected
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/50",
+                        !isAvailable && "cursor-not-allowed opacity-30"
+                      )}
+                    >
+                      {displayValue}
+                    </button>
+                  );
+                }
+
+                // TEXT / SELECT: plain pill
+                return (
+                  <button
+                    key={value}
+                    onClick={() => handleAttributeSelect(def.id, value)}
+                    disabled={!isAvailable}
+                    aria-pressed={isSelected}
+                    className={cn(
+                      "rounded-xl border-2 px-4 py-1.5 text-sm font-medium transition-all",
+                      isSelected
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:border-primary/50",
+                      !isAvailable && "cursor-not-allowed opacity-30"
+                    )}
+                  >
+                    {value}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })}
 
       {/* Quantity */}
       <div className="space-y-2">
@@ -316,7 +403,7 @@ export default function ProductInfo({
           id="add-to-cart-button"
           size="lg"
           className="flex-1 rounded-2xl gap-2 py-2 border-foreground/30"
-          disabled={isOutOfStock || isAdding || (product.variants.length > 0 && !selectedVariantId)}
+          disabled={isOutOfStock || isAdding || !isFullySelected}
           onClick={() => void handleAddToCart()}
         >
           <ShoppingCart className="h-5 w-5" />
@@ -324,7 +411,7 @@ export default function ProductInfo({
             ? "Adding…" 
             : isOutOfStock 
               ? "Out of Stock" 
-              : (product.variants.length > 0 && !selectedVariantId)
+              : !isFullySelected
                 ? "Select Options"
                 : "Add to Cart"}
         </Button>

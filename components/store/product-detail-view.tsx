@@ -6,16 +6,17 @@
 import { useEffect, useState } from "react";
 import ImageGallery from "@/components/store/image-gallery";
 import ProductInfo from "@/components/store/product-info";
-import { ProductWithRelationsSerialized } from "@/types";
+import { ProductWithRelationsSerialized, AttributeDefinitionPublic } from "@/types";
 
 interface ProductDetailViewProps {
   product: ProductWithRelationsSerialized;
+  attributeDefinitions: AttributeDefinitionPublic[];
   bundles?: any[];
 }
 
-export default function ProductDetailView({ product, bundles = [] }: ProductDetailViewProps) {
-  // Lift colour state up to coordinate between gallery and info
-  const [selectedColour, setSelectedColour] = useState<string | null>(null);
+export default function ProductDetailView({ product, attributeDefinitions, bundles = [] }: ProductDetailViewProps) {
+  // Lift variant ID state up to coordinate between gallery and info
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   // Track product view engagement
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function ProductDetailView({ product, bundles = [] }: ProductDeta
         <ImageGallery 
           images={product.images} 
           productName={product.name} 
-          selectedColour={selectedColour}
+          selectedVariantId={selectedVariantId}
         />
       </div>
 
@@ -48,8 +49,8 @@ export default function ProductDetailView({ product, bundles = [] }: ProductDeta
       <div className="flex flex-col gap-6">
         <ProductInfo 
           product={product} 
-          externalSelectedColour={selectedColour}
-          onColourChange={setSelectedColour}
+          attributeDefinitions={attributeDefinitions}
+          onVariantChange={(variant) => setSelectedVariantId(variant?.id ?? null)}
           bundles={bundles}
         />
       </div>

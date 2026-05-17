@@ -9,23 +9,34 @@ import { ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ImageGalleryProps {
-  images: { id: string; url: string; altText: string | null; colour?: string | null; blurDataUrl?: string | null }[];
+  images: { 
+    id: string; 
+    url: string; 
+    altText: string | null; 
+    blurDataUrl?: string | null;
+    variantIds: string[];
+  }[];
   productName: string;
-  selectedColour?: string | null;
+  selectedVariantId?: string | null;
 }
 
-export default function ImageGallery({ images, productName, selectedColour }: ImageGalleryProps) {
+export default function ImageGallery({ images, productName, selectedVariantId }: ImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Auto-switch to first image of selected colour
+  // Auto-switch to first image linked to the selected variant.
+  // Senior implementation detail: if a seller creates a variant but has not linked
+  // any images to it yet (common in lazy inventory setups), variantIds will be empty
+  // or no image will match. In that case, do NOT clear activeIndex or reset to 0
+  // (which would cause a jarring layout flicker). Check that linkedIndex is not -1
+  // before committing the update.
   useEffect(() => {
-    if (!selectedColour) return;
+    if (!selectedVariantId) return;
     
-    const colourIndex = images.findIndex(img => img.colour === selectedColour);
-    if (colourIndex !== -1) {
-      setActiveIndex(colourIndex);
+    const linkedIndex = images.findIndex(img => img.variantIds?.includes(selectedVariantId));
+    if (linkedIndex !== -1) {
+      setActiveIndex(linkedIndex);
     }
-  }, [selectedColour, images]);
+  }, [selectedVariantId, images]);
 
   if (images.length === 0) {
     return (

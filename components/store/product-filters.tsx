@@ -4,7 +4,7 @@
 "use client";
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,10 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import type { AttributeDefinitionPublic } from "@/types";
 
 interface ProductFiltersProps {
-  sizes: string[];
-  colours: string[];
+  filterableAttributes: AttributeDefinitionPublic[];
   /** If set, category filter is locked to this slug (category page) */
   lockedCategory?: string;
   /** Whether to render desktop sidebar, mobile trigger, or both (default) */
@@ -23,8 +23,7 @@ interface ProductFiltersProps {
 }
 
 function FiltersContent({
-  sizes,
-  colours,
+  filterableAttributes,
   lockedCategory,
   onClose,
 }: ProductFiltersProps & { onClose?: () => void }) {
@@ -33,19 +32,38 @@ function FiltersContent({
   const searchParams = useSearchParams();
 
   // Read current values
-  const currentMin = searchParams.get("minPrice") ?? "";
-  const currentMax = searchParams.get("maxPrice") ?? "";
-  const currentSizes = searchParams.get("size")?.split(",").filter(Boolean) ?? [];
-  const currentColours = searchParams.get("colour")?.split(",").filter(Boolean) ?? [];
-  const currentOnSale = searchParams.get("onSale") === "true";
-  const currentInStock = searchParams.get("inStock") === "true";
+  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") ?? "");
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") ?? "");
+  const [onSale, setOnSale] = useState(searchParams.get("onSale") === "true");
+  const [inStock, setInStock] = useState(searchParams.get("inStock") === "true");
 
-  const [minPrice, setMinPrice] = useState(currentMin);
-  const [maxPrice, setMaxPrice] = useState(currentMax);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>(currentSizes);
-  const [selectedColours, setSelectedColours] = useState<string[]>(currentColours);
-  const [onSale, setOnSale] = useState(currentOnSale);
-  const [inStock, setInStock] = useState(currentInStock);
+  const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string[]>>(() => {
+    const initial: Record<string, string[]> = {};
+    filterableAttributes.forEach((def) => {
+      const val = searchParams.get(`attr_${def.key}`);
+      if (val) {
+        initial[def.key] = val.split(",").filter(Boolean);
+      }
+    });
+    return initial;
+  });
+
+  // Keep state synchronized with URL query params
+  useEffect(() => {
+    setMinPrice(searchParams.get("minPrice") ?? "");
+    setMaxPrice(searchParams.get("maxPrice") ?? "");
+    setOnSale(searchParams.get("onSale") === "true");
+    setInStock(searchParams.get("inStock") === "true");
+
+    const next: Record<string, string[]> = {};
+    filterableAttributes.forEach((def) => {
+      const val = searchParams.get(`attr_${def.key}`);
+      if (val) {
+        next[def.key] = val.split(",").filter(Boolean);
+      }
+    });
+    setSelectedAttrs(next);
+  }, [searchParams, filterableAttributes]);
 
   const applyFilters = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -53,32 +71,54 @@ function FiltersContent({
 
     if (minPrice) params.set("minPrice", minPrice); else params.delete("minPrice");
     if (maxPrice) params.set("maxPrice", maxPrice); else params.delete("maxPrice");
-    if (selectedSizes.length) params.set("size", selectedSizes.join(",")); else params.delete("size");
-    if (selectedColours.length) params.set("colour", selectedColours.join(",")); else params.delete("colour");
     if (onSale) params.set("onSale", "true"); else params.delete("onSale");
     if (inStock) params.set("inStock", "true"); else params.delete("inStock");
     if (lockedCategory) params.set("category", lockedCategory);
 
+    // Apply dynamic attributes to URL params
+    filterableAttributes.forEach((def) => {
+      const values = selectedAttrs[def.key];
+      if (values && values.length > 0) {
+        params.set(`attr_${def.key}`, values.join(","));
+      } else {
+        params.delete(`attr_${def.key}`);
+      }
+    });
+
     router.push(`${pathname}?${params.toString()}`);
     onClose?.();
-  }, [minPrice, maxPrice, selectedSizes, selectedColours, onSale, inStock, router, pathname, searchParams, lockedCategory, onClose]);
+  }, [minPrice, maxPrice, onSale, inStock, selectedAttrs, filterableAttributes, router, pathname, searchParams, lockedCategory, onClose]);
 
   function clearAll() {
     const params = new URLSearchParams();
     if (lockedCategory) params.set("category", lockedCategory);
-    setMinPrice(""); setMaxPrice(""); setSelectedSizes([]); setSelectedColours([]); setOnSale(false); setInStock(false);
+
+    // Reset local states
+    setMinPrice("");
+    setMaxPrice("");
+    setOnSale(false);
+    setInStock(false);
+    setSelectedAttrs({});
+
     router.push(`${pathname}?${params.toString()}`);
     onClose?.();
   }
 
-  function toggleArr(arr: string[], setArr: (v: string[]) => void, val: string) {
-    setArr(arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]);
+  function toggleAttrValue(key: string, value: string) {
+    setSelectedAttrs((prev) => {
+      const current = prev[key] ?? [];
+      const next = current.includes(value)
+        ? current.filter((x) => x !== value)
+        : [...current, value];
+      return { ...prev, [key]: next };
+    });
   }
 
-  const hasFilters = minPrice || maxPrice || selectedSizes.length || selectedColours.length || onSale || inStock;
+  const hasDynamicFilters = Object.values(selectedAttrs).some((arr) => arr.length > 0);
+  const hasFilters = minPrice || maxPrice || onSale || inStock || hasDynamicFilters;
 
   return (
-    <div className="flex flex-col gap-6 h-full overflow-y-auto">
+    <div className="flex flex-col gap-6 h-full overflow-y-auto pr-1">
       {/* Price Range */}
       <div className="flex flex-col gap-3">
         <h3 className="font-semibold text-sm text-foreground">Price (KES)</h3>
@@ -105,53 +145,97 @@ function FiltersContent({
         </div>
       </div>
 
-      {/* Sizes */}
-      {sizes.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h3 className="font-semibold text-sm text-foreground">Size</h3>
-          <div className="flex flex-wrap gap-2">
-            {sizes.map((size) => (
-              <button
-                key={size}
-                id={`filter-size-${size}`}
-                onClick={() => toggleArr(selectedSizes, setSelectedSizes, size)}
-                className={cn(
-                  "px-3 py-1 rounded-full text-sm border transition-colors",
-                  selectedSizes.includes(size)
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-foreground hover:border-primary/50"
-                )}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Dynamic Attributes Filters */}
+      {filterableAttributes.map((def) => {
+        const selectedValues = selectedAttrs[def.key] ?? [];
 
-      {/* Colours */}
-      {colours.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h3 className="font-semibold text-sm text-foreground">Colour</h3>
-          <div className="flex flex-wrap gap-2">
-            {colours.map((colour) => (
-              <button
-                key={colour}
-                id={`filter-colour-${colour}`}
-                onClick={() => toggleArr(selectedColours, setSelectedColours, colour)}
-                className={cn(
-                  "px-3 py-1 rounded-full text-sm border transition-colors",
-                  selectedColours.includes(colour)
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-foreground hover:border-primary/50"
-                )}
-              >
-                {colour}
-              </button>
-            ))}
+        // Skip NUMBER fields in filters as range filter is handled separately
+        if (def.inputType === "NUMBER") return null;
+
+        return (
+          <div key={def.id} className="flex flex-col gap-3">
+            <h3 className="font-semibold text-sm text-foreground">{def.label}</h3>
+
+            {/* COLOR attribute rendering as swatches */}
+            {def.inputType === "COLOR" && (
+              <div className="flex flex-wrap gap-2">
+                {def.allowedValues.map((value) => {
+                  const isSelected = selectedValues.includes(value);
+                  const hasColor = value.trim() !== "";
+                  return (
+                    <button
+                      key={value}
+                      id={`filter-attr-${def.key}-${value}`}
+                      onClick={() => toggleAttrValue(def.key, value)}
+                      title={value || "Unset colour"}
+                      aria-label={`Filter by ${def.label} ${value}`}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        "h-8 w-8 rounded-full border-2 transition-all",
+                        isSelected
+                          ? "border-primary ring-2 ring-primary ring-offset-2"
+                          : "border-border hover:scale-105",
+                        !hasColor && "bg-muted"
+                      )}
+                      style={hasColor ? { backgroundColor: value } : undefined}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            {/* BOOLEAN attribute rendering as pills */}
+            {def.inputType === "BOOLEAN" && (
+              <div className="flex flex-wrap gap-2">
+                {["true", "false"].map((value) => {
+                  const isSelected = selectedValues.includes(value);
+                  const displayLabel = value === "true" ? "Yes" : "No";
+                  return (
+                    <button
+                      key={value}
+                      id={`filter-attr-${def.key}-${value}`}
+                      onClick={() => toggleAttrValue(def.key, value)}
+                      aria-pressed={isSelected}
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl text-sm border font-medium transition-all",
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-foreground hover:border-primary/50"
+                      )}
+                    >
+                      {displayLabel}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* TEXT / SELECT: rendered as checkbox list */}
+            {(def.inputType === "TEXT" || def.inputType === "SELECT") && (
+              <div className="flex flex-col gap-2 pl-1">
+                {def.allowedValues.map((value) => {
+                  const isSelected = selectedValues.includes(value);
+                  return (
+                    <div key={value} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`filter-attr-${def.key}-${value}`}
+                        checked={isSelected}
+                        onCheckedChange={() => toggleAttrValue(def.key, value)}
+                      />
+                      <Label
+                        htmlFor={`filter-attr-${def.key}-${value}`}
+                        className="cursor-pointer text-sm font-medium opacity-80 hover:opacity-100"
+                      >
+                        {value}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })}
 
       {/* Toggles */}
       <div className="flex flex-col gap-3">

@@ -11,6 +11,7 @@ import ProductGrid from "@/components/store/product-grid";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BreadcrumbSchema } from "@/components/seo/breadcrumb-schema";
+import { AttributeDefinitionPublic } from "@/types";
 
 export const revalidate = 60;
 
@@ -66,22 +67,30 @@ export default async function CategoryPage({ params }: Props) {
 
   if (!category) notFound();
 
-  // Fetch distinct sizes & colours for filters
-  const [distinctSizes, distinctColours] = await Promise.all([
-    prisma.productVariant.findMany({
-      where: { isActive: true, size: { not: null }, product: { isActive: true } },
-      select: { size: true },
-      distinct: ["size"],
-    }),
-    prisma.productVariant.findMany({
-      where: { isActive: true, colour: { not: null }, product: { isActive: true } },
-      select: { colour: true },
-      distinct: ["colour"],
-    }),
-  ]);
+  // Fetch filterable attribute definitions scoped to category or global
+  const filterableAttributes = await prisma.attributeDefinition.findMany({
+    where: {
+      isFilterable: true,
+      OR: [
+        { categoryId: null },
+        { categoryId: category.id }
+      ]
+    },
+    orderBy: { sortOrder: "asc" },
+    include: { allowedValues: { orderBy: { sortOrder: "asc" } } },
+  });
 
-  const sizes = distinctSizes.map((v) => v.size!).filter(Boolean).sort();
-  const colours = distinctColours.map((v) => v.colour!).filter(Boolean).sort();
+  const serializedFilters: AttributeDefinitionPublic[] = filterableAttributes.map((d) => ({
+    id: d.id,
+    key: d.key,
+    label: d.label,
+    unit: d.unit,
+    inputType: d.inputType,
+    sortOrder: d.sortOrder,
+    isFilterable: d.isFilterable,
+    categoryId: d.categoryId,
+    allowedValues: d.allowedValues.map((av) => av.value),
+  }));
 
   const breadcrumbItems = [
     { name: "Store", url: "/" },
@@ -129,13 +138,13 @@ export default async function CategoryPage({ params }: Props) {
 
       {/* Filters + Grid layout */}
       <div className="flex gap-8 items-start">
-        <ProductFilters sizes={sizes} colours={colours} lockedCategory={slug} mode="desktop" />
+        <ProductFilters filterableAttributes={serializedFilters} lockedCategory={slug} mode="desktop" />
 
         <div className="flex-1 min-w-0 flex flex-col gap-4">
           {/* Mobile filter trigger + sort row */}
           <div className="flex items-center gap-3 flex-wrap">
             <Suspense fallback={<Skeleton className="h-9 w-32 rounded-2xl" />}>
-              <ProductFilters sizes={sizes} colours={colours} lockedCategory={slug} mode="mobile" />
+              <ProductFilters filterableAttributes={serializedFilters} lockedCategory={slug} mode="mobile" />
             </Suspense>
             <div className="ml-auto">
               <Suspense fallback={<Skeleton className="h-9 w-44 rounded-2xl" />}>
