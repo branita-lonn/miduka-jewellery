@@ -7,7 +7,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Grid2X2, ShoppingCart, Gift, User, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCart } from "@/components/store/cart-provider";
 
 const TABS = [
   { href: "/", label: "Home", icon: Home, badge: undefined },
@@ -19,7 +18,6 @@ const TABS = [
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
-  const { itemCount } = useCart();
 
   return (
     <>
@@ -30,7 +28,7 @@ export default function MobileBottomNav() {
     >
       <div className="flex items-stretch justify-around h-16">
         {TABS.map(({ href, label, icon: Icon, badge }) => {
-          const displayBadge = href === "/cart" ? itemCount : badge;
+          const displayBadge = badge;
           const isActive =
             href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (

@@ -7,7 +7,7 @@ Disallow: /checkout
 Disallow: /api/
 
 # Host
-Host: http://localhost:3000
+Host: https://miduka-general.vercel.app
 
 # Sitemaps
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: https://miduka-general.vercel.app/sitemap.xml

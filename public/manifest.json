@@ -1,7 +1,7 @@
 {
-  "name": "MiDuka",
-  "short_name": "MiDuka",
-  "description": "Your single-seller e-commerce platform",
+  "name": "MiDuka General",
+  "short_name": "MiDuka Gen",
+  "description": "Your online e-commerce platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
