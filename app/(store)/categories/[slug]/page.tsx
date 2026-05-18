@@ -60,12 +60,23 @@ export default async function CategoryPage({ params }: Props) {
   const category = await prisma.category.findUnique({
     where: { slug, isActive: true },
     include: {
-      children: { where: { isActive: true }, orderBy: { sortOrder: "asc" } },
+      children: { where: { isActive: true }, orderBy: { sortOrder: "asc" }, include: { children: { select: { id: true, slug: true } } } },
       _count: { select: { products: true } },
     },
   });
 
   if (!category) notFound();
+
+  // Calculate total products including descendants
+  const categoryIds = [category.id];
+  category.children.forEach(child => {
+    categoryIds.push(child.id);
+    child.children.forEach(grandchild => categoryIds.push(grandchild.id));
+  });
+
+  const totalProducts = await prisma.product.count({
+    where: { categoryId: { in: categoryIds }, isActive: true }
+  });
 
   // Fetch filterable attribute definitions scoped to category or global
   const filterableAttributes = await prisma.attributeDefinition.findMany({
@@ -116,7 +127,7 @@ export default async function CategoryPage({ params }: Props) {
           <p className="text-muted-foreground mt-1 max-w-2xl">{category.description}</p>
         )}
         <p className="text-sm text-muted-foreground mt-1">
-          {category._count.products} product{category._count.products !== 1 ? "s" : ""}
+          {totalProducts} product{totalProducts !== 1 ? "s" : ""}
         </p>
       </div>
 

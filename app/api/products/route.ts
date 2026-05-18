@@ -44,6 +44,29 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }
     }
 
+    let categorySlugs: string[] = [];
+    if (category) {
+      const cat = await prisma.category.findUnique({
+        where: { slug: category },
+        include: {
+          children: {
+            select: { slug: true, children: { select: { slug: true } } }
+          }
+        }
+      });
+      if (cat) {
+        categorySlugs.push(category);
+        cat.children.forEach(child => {
+          categorySlugs.push(child.slug);
+          child.children.forEach(grandchild => {
+            categorySlugs.push(grandchild.slug);
+          });
+        });
+      } else {
+        categorySlugs.push(category);
+      }
+    }
+
     const orderBy: Prisma.ProductOrderByWithRelationInput =
       SORT_MAP[sort] ?? SORT_MAP.newest;
 
@@ -56,7 +79,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
           { tags: { has: q } },
         ],
       }),
-      ...(category && { category: { slug: category } }),
+      ...(categorySlugs.length > 0 && { category: { slug: { in: categorySlugs } } }),
       ...(minPrice !== undefined && { price: { gte: minPrice } }),
       ...(maxPrice !== undefined && {
         price: minPrice !== undefined ? { gte: minPrice, lte: maxPrice } : { lte: maxPrice },
