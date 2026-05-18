@@ -42,6 +42,7 @@ const variantSchema = z.object({
   attributes: z.array(
     z.object({
       key: z.string(),
+      attributeDefinitionId: z.string().optional(),
       value: z.string(),
     })
   ).default([]),
@@ -121,6 +122,7 @@ export function ProductForm({
             isActive: v.isActive,
             attributes: v.attributes?.map((attr: any) => ({
               key: attr.key,
+              attributeDefinitionId: attr.attributeDefinitionId,
               value: attr.value,
             })) || [],
           })) || [],
@@ -160,6 +162,7 @@ export function ProductForm({
       isActive: true,
       attributes: activeAttributes.map((attr) => ({
         key: attr.key,
+        attributeDefinitionId: attr.id,
         value: "",
       })),
     });
@@ -692,7 +695,7 @@ export function ProductForm({
                                               if (idx > -1) {
                                                 updated[idx] = { ...updated[idx], value: newVal };
                                               } else {
-                                                updated.push({ key: attr.key, value: newVal });
+                                                updated.push({ key: attr.key, attributeDefinitionId: attr.id, value: newVal });
                                               }
                                               field.onChange(updated);
                                             }}
