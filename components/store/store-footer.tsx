@@ -113,8 +113,8 @@ export default async function StoreFooter() {
             <Link href="/categories" className="text-muted-foreground hover:text-foreground transition-colors">
               All Categories
             </Link>
-            <Link href="/search" className="text-muted-foreground hover:text-foreground transition-colors">
-              Search
+            <Link href="/products" className="text-muted-foreground hover:text-foreground transition-colors">
+              All Products
             </Link>
           </div>
 

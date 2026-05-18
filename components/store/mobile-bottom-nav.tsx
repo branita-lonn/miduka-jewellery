@@ -11,10 +11,9 @@ import { useCart } from "@/components/store/cart-provider";
 
 const TABS = [
   { href: "/", label: "Home", icon: Home, badge: undefined },
-  { href: "/search", label: "Products", icon: Search, badge: undefined },
+  { href: "/products", label: "Products", icon: Search, badge: undefined },
   { href: "/categories", label: "Categories", icon: Grid2X2, badge: undefined },
   { href: "/gift-cards", label: "Gift Cards", icon: Gift, badge: undefined },
-  { href: "/cart", label: "Cart", icon: ShoppingCart, badge: 0 },
   { href: "/account", label: "Account", icon: User, badge: undefined },
 ] as const;
 
