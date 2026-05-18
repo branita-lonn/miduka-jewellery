@@ -37,10 +37,15 @@ type RawProduct = Prisma.ProductGetPayload<{
     category: { select: { name: true; slug: true } };
     reviews: { select: { rating: true } };
     flashSale: true;
+    variants: { select: { stockQuantity: true; isActive: true } };
   };
 }>;
 
 function toCardProps(p: RawProduct) {
+  const totalStock = p.variants && p.variants.length > 0
+    ? p.variants.reduce((sum, v) => sum + v.stockQuantity, 0)
+    : p.stockQuantity;
+
   return {
     id: p.id,
     slug: p.slug,
@@ -52,7 +57,7 @@ function toCardProps(p: RawProduct) {
     category: p.category ? { name: p.category.name, slug: p.category.slug } : null,
     isOnSale: p.isOnSale,
     isFeatured: p.isFeatured,
-    stockQuantity: p.stockQuantity,
+    stockQuantity: totalStock,
     createdAt: p.createdAt,
     reviewCount: p.reviews.length,
     rating: p.reviews.length > 0 ? p.reviews.reduce((acc, r: any) => acc + r.rating, 0) / p.reviews.length : 0,
@@ -68,6 +73,10 @@ const PRODUCT_INCLUDE = {
   category: { select: { name: true as const, slug: true as const } },
   reviews: { select: { rating: true as const } },
   flashSale: true,
+  variants: {
+    where: { isActive: true },
+    select: { stockQuantity: true as const, isActive: true as const },
+  },
 } satisfies Prisma.ProductInclude;
 
 // ─── Page ─────────────────────────────────────────────────────────────────

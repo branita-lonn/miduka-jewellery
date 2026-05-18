@@ -215,7 +215,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         isActive: p.isActive,
         isFeatured: p.isFeatured,
         isOnSale: p.isOnSale,
-        stockQuantity: p.stockQuantity,
+        stockQuantity: p.variants && p.variants.length > 0
+          ? p.variants.reduce((sum, v) => sum + v.stockQuantity, 0)
+          : p.stockQuantity,
         createdAt: p.createdAt.toISOString(),
         updatedAt: p.updatedAt.toISOString(),
         categoryId: p.categoryId,
