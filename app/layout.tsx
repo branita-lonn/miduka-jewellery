@@ -10,7 +10,7 @@ import { PwaInstallPrompt } from "@/components/store/pwa-install-prompt";
 import { OrganizationSchema } from "@/components/seo/organization-schema";
 import { Analytics } from "@vercel/analytics/react";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-poppins" });
 const lato = Lato({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-lato" });
@@ -76,6 +76,10 @@ export default async function RootLayout({
   const settings = await prisma.storeSettings.findFirst();
   const socialLinks = (settings?.socialLinks as any) || {};
 
+  // Extract your dynamic properties with fallback values
+  const storeName = settings?.storeName || "MiDuka";
+  const logoUrl = settings?.logoUrl || "/icons/icon-192.png";
+
   return (
     <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
       <head>
@@ -105,7 +109,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <OrganizationSchema 
+            <OrganizationSchema
               storeName={settings?.storeName}
               storeTagline={settings?.storeTagline || undefined}
               storeLogoUrl={settings?.logoUrl}
@@ -116,7 +120,10 @@ export default async function RootLayout({
             />
             {children}
             <Toaster position="bottom-right" />
-            <PwaInstallPrompt />
+
+            {/* 2. Pass the dynamic settings variables here */}
+            <PwaInstallPrompt storeName={storeName} logoUrl={logoUrl} />
+
           </ThemeProvider>
         </SessionProvider>
         <Analytics />
