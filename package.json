@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:socket": "npx tsx server.socket.ts",
     "seed": "npx tsx prisma/seed.ts",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "eslint"
