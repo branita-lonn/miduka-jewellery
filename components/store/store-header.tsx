@@ -48,7 +48,7 @@ export default function StoreHeader({ storeName, logoUrl, logoBlurDataUrl, user 
 
   return (
     <header className="sticky top-0 z-40 w-full bg-card border-b border-border">
-      <div className="container mx-auto px-4 h-16 flex items-center gap-3 relative">
+      <div className="container mx-auto px-4 h-20 flex items-center gap-3 relative">
         {/* Logo / Store Name */}
         <Link
           href="/"
@@ -61,7 +61,7 @@ export default function StoreHeader({ storeName, logoUrl, logoBlurDataUrl, user 
               alt={storeName}
               width={120}
               height={40}
-              className="h-8 w-auto object-contain"
+              className="h-12 w-auto object-contain"
               priority
               {...(logoBlurDataUrl ? { placeholder: "blur", blurDataURL: logoBlurDataUrl } : {})}
             />
